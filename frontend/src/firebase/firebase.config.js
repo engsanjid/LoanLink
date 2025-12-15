@@ -1,13 +1,21 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBBOH7ER5NdIhMEPZY_W9Ly6qbg5he_kwg",
-  authDomain: "loanlink-2a20b.firebaseapp.com",
-  projectId: "loanlink-2a20b",
-  storageBucket: "loanlink-2a20b.firebasestorage.app",
-  messagingSenderId: "810925358056",
-  appId: "1:810925358056:web:d43d7ec38e01e18ca0425d",
-  measurementId: "G-G13LF6QT0Z"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-export const app = initializeApp(firebaseConfig)
+
+export const app = initializeApp(firebaseConfig);
+
+
+export const auth = getAuth(app);
+
+export const analytics = getAnalytics(app);

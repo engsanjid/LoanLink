@@ -9,8 +9,8 @@ import Profile from '../pages/Dashboard/Common/Profile'
 import MainLayout from '../layouts/MainLayout'
 
 
-import AllLoans from '../pages/AllLoans/AllLoans'
-import About from '../pages/About/About'
+import AllLoans from '../pages/AllLoans/AllLoans.jsx'
+import About from '../pages/About/About.jsx'
 import Contact from '../pages/Contact/Contact.jsx'
 import { createBrowserRouter } from 'react-router'
 
