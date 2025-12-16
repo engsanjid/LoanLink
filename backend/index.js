@@ -53,19 +53,19 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 })
 async function run() {
   try {
-    const db = client.db('plantsDB')
-    const plantsCollection = db.collection('plants')
+    const db = client.db('loansDB')
+    const plantsCollection = db.collection('loans')
 
     // Save a plant data in db
-    app.post('/plants', async (req, res) => {
+    app.post('/loans', async (req, res) => {
       const plantData = req.body
       console.log(plantData)
       const result = await plantsCollection.insertOne(plantData)
       res.send(result)
     })
 
-    // get all plants from db
-    app.get('/plants', async (req, res) => {
+    // get all loans from db
+    app.get('/loans', async (req, res) => {
       const result = await plantsCollection.find().toArray()
       res.send(result)
     })
