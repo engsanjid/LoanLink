@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, NavLink } from 'react-router'
 import { AiOutlineMenu } from 'react-icons/ai'
 import { FiSun, FiMoon } from 'react-icons/fi'
 import useAuth from '../../../hooks/useAuth'
@@ -12,120 +12,136 @@ const Navbar = () => {
 
   const toggleTheme = () => setDarkMode(!darkMode)
 
+  const navClass = ({ isActive }) =>
+    isActive
+      ? 'text-yellow-300 font-semibold border-b-2 border-yellow-300 pb-1'
+      : 'text-white/90 hover:text-yellow-300 transition'
+
   return (
-    <nav className="fixed w-full z-20 shadow-md backdrop-blur bg-white/80 dark:bg-gray-900/80">
+    <nav className="fixed w-full z-30 bg-gradient-to-r from-pink-500 via-purple-500 to-fuchsia-600 shadow-lg">
       <div className="max-w-[1200px] mx-auto px-5 py-4 flex justify-between items-center">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 group">
-          <span className="text-2xl font-bold tracking-wide text-blue-700 dark:text-blue-400 group-hover:text-blue-600 transition">
-            LoanLink
-          </span>
+        <Link
+          to="/"
+          className="text-2xl font-bold tracking-wide text-yellow-300 hover:text-yellow-200 transition"
+        >
+          LoanLink
         </Link>
 
         {/* Desktop Menu */}
-        <ul className="hidden md:flex items-center gap-8 text-[16px] font-medium">
-          <li><Link to="/" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 transition">Home</Link></li>
-          <li><Link to="/all-loans" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 transition">All-Loans</Link></li>
-          <li><Link to="/about" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 transition">About Us</Link></li>
-          <li><Link to="/contact" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 transition">Contact</Link></li>
+        <ul className="hidden md:flex items-center gap-8 font-medium">
+
+          <NavLink to="/" className={navClass}>Home</NavLink>
+          <NavLink to="/all-loans" className={navClass}>All Loans</NavLink>
+          <NavLink to="/about" className={navClass}>About Us</NavLink>
+          <NavLink to="/contact" className={navClass}>Contact</NavLink>
 
           {user ? (
             <>
-              <li>
-                <Link to="/dashboard" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 transition">
-                  Dashboard
-                </Link>
-              </li>
+              <NavLink to="/dashboard" className={navClass}>
+                Dashboard
+              </NavLink>
 
-              <li>
-                <button
-                  onClick={logOut}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                >
-                  Logout
-                </button>
-              </li>
+              <button
+                onClick={logOut}
+                className="px-5 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
 
-              <li>
-                <img
-                  src={user.photoURL || avatarImg}
-                  alt="profile"
-                  className="w-10 h-10 rounded-full border"
-                />
-              </li>
+              <img
+                src={user.photoURL || avatarImg}
+                alt="profile"
+                className="w-10 h-10 rounded-full border-2 border-yellow-300"
+              />
             </>
           ) : (
             <>
-              <li>
-                <Link to="/login" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                  Login
-                </Link>
-              </li>
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  `px-5 py-2 rounded-full transition ${
+                    isActive
+                      ? 'bg-white text-purple-600'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`
+                }
+              >
+                Login
+              </NavLink>
 
-              <li>
-                <Link to="/signup" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                  Register
-                </Link>
-              </li>
+              <NavLink
+                to="/signup"
+                className={({ isActive }) =>
+                  `px-5 py-2 rounded-full transition ${
+                    isActive
+                      ? 'bg-yellow-400 text-purple-700'
+                      : 'bg-gradient-to-r from-purple-700 to-pink-600 text-white hover:opacity-90'
+                  }`
+                }
+              >
+                Register
+              </NavLink>
             </>
           )}
 
-          {/* Theme Toggle */}
-          <li>
-            <button onClick={toggleTheme} className="text-xl hover:text-blue-500 transition">
-              {darkMode ? <FiSun /> : <FiMoon />}
-            </button>
-          </li>
+          {/* Theme Toggle (visual only) */}
+          <button
+            onClick={toggleTheme}
+            className="text-xl text-white hover:text-yellow-300 transition"
+          >
+            {darkMode ? <FiSun /> : <FiMoon />}
+          </button>
         </ul>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-3 rounded-full border hover:shadow transition"
           onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden p-2 rounded bg-white/20 text-white"
         >
           <AiOutlineMenu size={22} />
         </button>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 shadow-lg py-5 px-6 space-y-4 text-[17px] font-medium">
+        <div className="md:hidden px-6 py-5 space-y-4 bg-gradient-to-b from-pink-500 to-fuchsia-600 text-white">
 
-          <Link className="mobile-link" to="/">Home</Link>
-          <Link className="mobile-link" to="/all-loans">All-Loans</Link>
-          <Link className="mobile-link" to="/about">About Us</Link>
-          <Link className="mobile-link" to="/contact">Contact</Link>
+          <NavLink to="/" className="block">Home</NavLink>
+          <NavLink to="/all-loans" className="block">All Loans</NavLink>
+          <NavLink to="/about" className="block">About Us</NavLink>
+          <NavLink to="/contact" className="block">Contact</NavLink>
 
           {user ? (
             <>
-              <Link className="mobile-link" to="/dashboard">Dashboard</Link>
+              <NavLink to="/dashboard" className="block">
+                Dashboard
+              </NavLink>
 
               <button
                 onClick={logOut}
-                className="w-full text-center py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="w-full py-2 rounded bg-red-500 text-white"
               >
                 Logout
               </button>
-
-              <div className="flex items-center gap-3 pt-4">
-                <img src={user.photoURL || avatarImg} className="w-12 h-12 rounded-full border" />
-                <span className="font-semibold text-gray-700 dark:text-gray-200">
-                  {user.displayName || "User"}
-                </span>
-              </div>
             </>
           ) : (
             <>
-              <Link className="mobile-btn" to="/login">Login</Link>
-              <Link className="mobile-btn" to="/signup">Register</Link>
+              <NavLink
+                to="/login"
+                className="block text-center py-2 rounded bg-white/20"
+              >
+                Login
+              </NavLink>
+              <NavLink
+                to="/signup"
+                className="block text-center py-2 rounded bg-yellow-400 text-purple-700"
+              >
+                Register
+              </NavLink>
             </>
           )}
-
-          {/* Theme Toggle */}
-          <button onClick={toggleTheme} className="flex items-center gap-2 pt-3 text-lg text-gray-700 dark:text-gray-200">
-            {darkMode ? <FiSun /> : <FiMoon />} Theme
-          </button>
         </div>
       )}
     </nav>
