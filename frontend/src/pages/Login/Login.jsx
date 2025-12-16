@@ -1,6 +1,5 @@
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import toast from 'react-hot-toast'
-import LoadingSpinner from '../../components/Shared/LoadingSpinner'
 import useAuth from '../../hooks/useAuth'
 import { FcGoogle } from 'react-icons/fc'
 import { TbFidgetSpinner } from 'react-icons/tb'
@@ -12,134 +11,147 @@ const Login = () => {
 
   const from = location.state || '/'
 
-  if (loading) return <LoadingSpinner />
-  if (user) return <Navigate to={from} replace={true} />
+  if (user) return <Navigate to={from} replace />
 
-  // form submit handler
-  const handleSubmit = async event => {
-    event.preventDefault()
-    const form = event.target
+  const handleSubmit = async e => {
+    e.preventDefault()
+    const form = e.target
     const email = form.email.value
     const password = form.password.value
 
     try {
-      //User Login
       await signIn(email, password)
-
+      toast.success('Login Successful 🎉')
       navigate(from, { replace: true })
-      toast.success('Login Successful')
     } catch (err) {
-      console.log(err)
       toast.error(err?.message)
     }
   }
 
-  // Handle Google Signin
   const handleGoogleSignIn = async () => {
     try {
-      //User Registration using google
       await signInWithGoogle()
+      toast.success('Login Successful 🎉')
       navigate(from, { replace: true })
-      toast.success('Login Successful')
     } catch (err) {
-      console.log(err)
       setLoading(false)
       toast.error(err?.message)
     }
   }
+
   return (
-    <div className='flex justify-center items-center min-h-screen bg-white'>
-      <div className='flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900'>
-        <div className='mb-8 text-center'>
-          <h1 className='my-3 text-4xl font-bold'>Log In</h1>
-          <p className='text-sm text-gray-400'>
-            Sign in to access your account
-          </p>
-        </div>
-        {/* Login Form */}
-        <form
-          onSubmit={handleSubmit}
-          noValidate=''
-          action=''
-          className='space-y-6 ng-untouched ng-pristine ng-valid'
-        >
-          <div className='space-y-4'>
-            <div>
-              <label htmlFor='email' className='block mb-2 text-sm'>
-                Email address
-              </label>
-              <input
-                type='email'
-                name='email'
-                id='email'
-                required
-                placeholder='Enter Your Email Here'
-                className='w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-lime-500 bg-gray-200 text-gray-900'
-                data-temp-mail-org='0'
-              />
-            </div>
-            <div>
-              <div className='flex justify-between'>
-                <label htmlFor='password' className='text-sm mb-2'>
-                  Password
-                </label>
-              </div>
-              <input
-                type='password'
-                name='password'
-                autoComplete='current-password'
-                id='password'
-                required
-                placeholder='*******'
-                className='w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-lime-500 bg-gray-200 text-gray-900'
-              />
-            </div>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-500 via-purple-500 to-fuchsia-600 px-4">
 
-          <div>
-            <button
-              type='submit'
-              className='bg-lime-500 w-full rounded-md py-3 text-white'
-            >
-              {loading ? (
-                <TbFidgetSpinner className='animate-spin m-auto' />
-              ) : (
-                'Continue'
-              )}
-            </button>
-          </div>
-        </form>
-        <div className='space-y-1'>
-          <button className='text-xs hover:underline hover:text-lime-500 text-gray-400 cursor-pointer'>
-            Forgot password?
-          </button>
-        </div>
-        <div className='flex items-center pt-4 space-x-1'>
-          <div className='flex-1 h-px sm:w-16 dark:bg-gray-700'></div>
-          <p className='px-3 text-sm dark:text-gray-400'>
-            Login with social accounts
-          </p>
-          <div className='flex-1 h-px sm:w-16 dark:bg-gray-700'></div>
-        </div>
-        <div
-          onClick={handleGoogleSignIn}
-          className='flex justify-center items-center space-x-2 border m-3 p-2 border-gray-300 border-rounded cursor-pointer'
-        >
-          <FcGoogle size={32} />
+      {/* CARD */}
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2">
 
-          <p>Continue with Google</p>
-        </div>
-        <p className='px-6 text-sm text-center text-gray-400'>
-          Don&apos;t have an account yet?{' '}
+        {/* LEFT PANEL */}
+        <div className="hidden lg:flex flex-col justify-center px-14 text-white bg-gradient-to-br from-purple-700 via-pink-600 to-fuchsia-600">
           <Link
-            state={from}
-            to='/signup'
-            className='hover:underline hover:text-lime-500 text-gray-600'
+            to="/"
+            className="mb-10 text-2xl font-bold tracking-wide text-yellow-300 hover:text-yellow-200 transition"
           >
-            Sign up
+            LoanLink
           </Link>
-          .
-        </p>
+
+          <h1 className="text-4xl font-bold mb-4">Welcome Back</h1>
+          <p className="text-lg opacity-90 max-w-sm">
+            Log in to manage your loans with{' '}
+            <Link
+              to="/"
+              className="font-semibold text-yellow-300 underline underline-offset-4"
+            >
+              LoanLink
+            </Link>
+          </p>
+
+          <div className="mt-12 text-sm opacity-70">
+            www.loanlink.com
+          </div>
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="flex items-center justify-center px-10 py-12">
+          <div className="w-full max-w-md">
+
+            <h2 className="text-3xl font-semibold text-gray-800 mb-2">
+              Log In
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              Sign in to access your account
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+
+              {/* Email */}
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="Email Address"
+                  className="w-full border-b-2 border-gray-300 focus:border-pink-500 outline-none py-2 text-gray-700"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  placeholder="Password"
+                  className="w-full border-b-2 border-gray-300 focus:border-pink-500 outline-none py-2 text-gray-700"
+                />
+              </div>
+
+              {/* Button */}
+              <button
+                type="submit"
+                className="w-full py-3 text-white font-semibold rounded-md bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 transition"
+              >
+                {loading ? (
+                  <TbFidgetSpinner className="animate-spin mx-auto" />
+                ) : (
+                  'CONTINUE'
+                )}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="flex items-center my-6">
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <span className="px-3 text-sm text-gray-400">OR</span>
+              <div className="flex-1 h-px bg-gray-300"></div>
+            </div>
+
+            {/* Google */}
+            <button
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-md bg-gradient-to-r from-sky-400 to-cyan-400 hover:from-sky-500 hover:to-cyan-500 transition"
+            >
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow">
+                <FcGoogle size={18} />
+              </span>
+              <span className="text-white font-medium">
+                Continue with Google
+              </span>
+            </button>
+
+            {/* Signup */}
+            <p className="text-sm text-center mt-6 text-gray-500">
+              Don&apos;t have an account?{' '}
+              <Link
+                to="/signup"
+                state={from}
+                className="text-pink-600 font-medium"
+              >
+                Sign up
+              </Link>
+            </p>
+
+          </div>
+        </div>
       </div>
     </div>
   )
