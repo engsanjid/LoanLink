@@ -13,6 +13,8 @@ import AllLoans from '../pages/AllLoans/AllLoans.jsx'
 import About from '../pages/About/About.jsx'
 import Contact from '../pages/Contact/Contact.jsx'
 import { createBrowserRouter } from 'react-router'
+import AddLoanForm from '../components/Form/AddLoanForm.jsx'
+import UpdateLoanForm from '../components/Form/UpdateLoanForm.jsx'
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Statistics /> },
       { path: 'profile', element: <Profile /> },
+      { path: 'add-loan', element: <AddLoanForm /> },
+      { path: 'updateLoan', element: <UpdateLoanForm /> },
     ],
   },
 ])

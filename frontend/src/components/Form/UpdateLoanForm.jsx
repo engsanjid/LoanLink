@@ -1,4 +1,4 @@
-const UpdatePlantForm = () => {
+const UpdateLoanForm = () => {
   return (
     <div className='w-full flex flex-col justify-center items-center text-gray-800 rounded-xl bg-gray-50'>
       <form>
@@ -116,4 +116,4 @@ const UpdatePlantForm = () => {
   )
 }
 
-export default UpdatePlantForm
+export default UpdateLoanForm
