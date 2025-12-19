@@ -2,6 +2,7 @@ import { motion } from "framer-motion"
 import { Link } from "react-router"
 import Loans from '../../components/Home/Loans'
 import bannerimg from "../../assets/images/unnamed.jpg"
+import CustomerReviews from "./CustomerReviews"
 
 const Home = () => {
   return (
@@ -85,7 +86,7 @@ const Home = () => {
 
 
     
-    
+    <CustomerReviews></CustomerReviews>
 
     
       
