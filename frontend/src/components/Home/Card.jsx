@@ -1,49 +1,39 @@
 import { Link } from 'react-router'
 
-const Card = () => {
+const LoanCard = ({ loan }) => {
+  const { _id, title, image, description, maxAmount } = loan
+
   return (
-    <Link
-      to={`/plant/1`}
-      className='col-span-1 cursor-pointer group shadow-xl p-3 rounded-xl'
-    >
-      <div className='flex flex-col gap-2 w-full'>
-        <div
-          className='
-              aspect-square 
-              w-full 
-              relative 
-              overflow-hidden 
-              rounded-xl
-            '
+    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition overflow-hidden">
+
+      {/* Image */}
+      <img
+        src={image}
+        alt={title}
+        className="h-48 w-full object-cover"
+      />
+
+      {/* Content */}
+      <div className="p-5 space-y-3">
+        <h3 className="text-xl font-semibold">{title}</h3>
+
+        <p className="text-gray-600 text-sm line-clamp-2">
+          {description}
+        </p>
+
+        <p className="font-semibold text-pink-600">
+          Max Loan: ৳ {maxAmount}
+        </p>
+
+        <Link
+          to={`/loan/${_id}`}
+          className="inline-block w-full text-center py-2 rounded-md bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium hover:opacity-90"
         >
-          <img
-            className='
-                object-cover 
-                h-full 
-                w-full 
-                group-hover:scale-110 
-                transition
-              '
-            src='https://i.ibb.co.com/rMHmQP2/money-plant-in-feng-shui-brings-luck.jpg'
-            alt='Plant Image'
-          />
-          <div
-            className='
-              absolute
-              top-3
-              right-3
-            '
-          ></div>
-        </div>
-        <div className='font-semibold text-lg'>Money Plant</div>
-        <div className='font-semibold text-lg'>Category: Indoor</div>
-        <div className='font-semibold text-lg'>Quantity: 10</div>
-        <div className='flex flex-row items-center gap-1'>
-          <div className='font-semibold'> Price: 15$</div>
-        </div>
+          View Details
+        </Link>
       </div>
-    </Link>
+    </div>
   )
 }
 
-export default Card
+export default LoanCard

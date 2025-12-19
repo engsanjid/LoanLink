@@ -82,6 +82,8 @@ const AddLoanForm = () => {
               <option value="Personal">Personal</option>
               <option value="Business">Business</option>
               <option value="Education">Education</option>
+              <option value="Home">Medical</option>
+              <option value="Home">Vehicle</option>
               <option value="Home">Home</option>
             </select>
           </div>
