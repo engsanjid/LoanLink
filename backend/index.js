@@ -77,6 +77,12 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/all-loans', async (req, res) => {
+  const result = await loansCollection.find().toArray()
+  res.send(result)
+})
+
+
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 })
     console.log(
