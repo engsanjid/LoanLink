@@ -4,6 +4,7 @@ import Loans from '../../components/Home/Loans'
 import bannerimg from "../../assets/images/unnamed.jpg"
 import CustomerReviews from "./CustomerReviews"
 import HowItWorks from "./HowItWorks"
+import Stats from "./Stats"
 
 const Home = () => {
   return (
@@ -85,7 +86,7 @@ const Home = () => {
   </div>
 </section>
 
-
+<Stats></Stats>
     <HowItWorks></HowItWorks>
     <CustomerReviews></CustomerReviews>
 
