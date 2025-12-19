@@ -54,19 +54,26 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 async function run() {
   try {
     const db = client.db('loansDB')
-    const plantsCollection = db.collection('loans')
+    const loansCollection = db.collection('loans')
 
     // Save a plant data in db
     app.post('/loans', async (req, res) => {
       const plantData = req.body
       console.log(plantData)
-      const result = await plantsCollection.insertOne(plantData)
+      const result = await loansCollection.insertOne(plantData)
       res.send(result)
     })
 
     // get all loans from db
     app.get('/loans', async (req, res) => {
-      const result = await plantsCollection.find().toArray()
+      const result = await loansCollection.find().limit(6).toArray()
+      res.send(result)
+    })
+
+    // get all loans from db
+    app.get('/loans/:id', async (req, res) => {
+      const id = req.params.id
+      const result = await loansCollection.findOne({ _id: new ObjectId(id) })
       res.send(result)
     })
 
