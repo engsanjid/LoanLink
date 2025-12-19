@@ -5,6 +5,7 @@ import bannerimg from "../../assets/images/unnamed.jpg"
 import CustomerReviews from "./CustomerReviews"
 import HowItWorks from "./HowItWorks"
 import Stats from "./Stats"
+import WhyChooseUs from "./WhyChooseUs"
 
 const Home = () => {
   return (
@@ -85,19 +86,10 @@ const Home = () => {
     <Loans />
   </div>
 </section>
-
+<WhyChooseUs></WhyChooseUs>
 <Stats></Stats>
     <HowItWorks></HowItWorks>
-    <CustomerReviews></CustomerReviews>
-
-    
-      
-
-      
-   
-
-     
-     
+    <CustomerReviews></CustomerReviews> 
     </div>
   )
 }
