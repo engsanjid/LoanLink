@@ -103,6 +103,12 @@ app.post('/loan-applications', verifyJWT, async (req, res) => {
   res.send(result)
 })
 
+app.get('/my-loans', verifyJWT, async (req, res) => {
+  const email = req.tokenEmail
+  const result = await loanApplications.find({ userEmail: email }).toArray()
+  res.send(result)
+})
+
 
 
 app.get('/my-loans', verifyJWT, async (req, res) => {
