@@ -22,7 +22,7 @@ const ApplyLoan = () => {
     e.preventDefault()
     const form = e.target
 
-    const token = await user.getIdToken() // 🔥 FIX
+    const token = await user.getIdToken() 
 
     const applicationData = {
       userEmail: user.email,
