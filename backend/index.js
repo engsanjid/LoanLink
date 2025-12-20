@@ -92,6 +92,19 @@ app.get('/loan/:id', async (req, res) => {
 
 const loanApplications = db.collection('loanApplications')
 
+app.post('/loan-applications', verifyJWT, async (req, res) => {
+  const application = req.body
+
+  application.status = 'Pending'
+  application.feeStatus = 'Unpaid'
+  application.createdAt = new Date()
+
+  const result = await loanApplications.insertOne(application)
+  res.send(result)
+})
+
+
+
 app.get('/my-loans', verifyJWT, async (req, res) => {
   const email = req.tokenEmail
 
