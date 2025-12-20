@@ -50,40 +50,76 @@ const PendingLoans = () => {
       <h2 className="text-2xl font-bold mb-6">Pending Loan Applications</h2>
 
       <table className="w-full border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border p-2">Borrower</th>
-            <th className="border p-2">Loan</th>
-            <th className="border p-2">Amount</th>
-            <th className="border p-2">Status</th>
-            <th className="border p-2">Action</th>
-          </tr>
-        </thead>
+       <thead className="bg-gray-100">
+  <tr>
+    <th className="border p-2">Loan ID</th>
+    <th className="border p-2">Borrower</th>
+    <th className="border p-2">Amount</th>
+    <th className="border p-2">Applied Date</th>
+    <th className="border p-2">Actions</th>
+  </tr>
+</thead>
+
 
         <tbody>
-          {loans.map(loan => (
-            <tr key={loan._id} className="text-center">
-              <td className="border p-2">{loan.firstName}</td>
-              <td className="border p-2">{loan.loanTitle}</td>
-              <td className="border p-2">৳ {loan.loanAmount}</td>
-              <td className="border p-2">{loan.status}</td>
-              <td className="border p-2 space-x-2">
-                <button
-                  onClick={() => handleStatus(loan._id, 'Approved')}
-                  className="px-3 py-1 bg-green-600 text-white rounded"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleStatus(loan._id, 'Rejected')}
-                  className="px-3 py-1 bg-red-600 text-white rounded"
-                >
-                  Reject
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+  {loans.map(loan => (
+    <tr key={loan._id} className="text-center">
+      {/* Loan ID */}
+      <td className="border p-2 text-xs">
+        {loan._id}
+      </td>
+
+      {/* Borrower Info */}
+      <td className="border p-2">
+        <p className="font-medium">
+          {loan.firstName} {loan.lastName}
+        </p>
+        <p className="text-sm text-gray-500">
+          {loan.userEmail}
+        </p>
+      </td>
+
+      {/* Amount */}
+      <td className="border p-2">
+        ৳ {loan.loanAmount}
+      </td>
+
+      {/* Applied Date */}
+      <td className="border p-2">
+        {loan.createdAt
+          ? new Date(loan.createdAt).toLocaleDateString()
+          : '—'}
+      </td>
+
+      {/* Actions */}
+      <td className="border p-2 space-x-2">
+        <button
+          onClick={() => handleStatus(loan._id, 'Approved')}
+          className="px-3 py-1 bg-green-600 text-white rounded"
+        >
+          Approve
+        </button>
+
+        <button
+          onClick={() => handleStatus(loan._id, 'Rejected')}
+          className="px-3 py-1 bg-red-600 text-white rounded"
+        >
+          Reject
+        </button>
+
+        <button
+          onClick={() =>
+            window.open(`/loan/${loan.loanId}`, '_blank')
+          }
+          className="px-3 py-1 bg-indigo-600 text-white rounded"
+        >
+          View
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
       </table>
     </div>
   )

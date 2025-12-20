@@ -19,19 +19,19 @@ const ManagerMenu = () => {
         address="pending-loans"
       />
 
-      {/* Manager Inventory */}
-      <MenuItem
-        icon={MdHomeWork}
-        label="My Inventory"
-        address="my-inventory"
-      />
+     <MenuItem
+  icon={MdOutlineManageHistory}
+  label="Approved Loans"
+  address="approved-loans"
+/>
 
-      {/* Manage Loans */}
-      <MenuItem
-        icon={MdOutlineManageHistory}
-        label="Manage Loans"
-        address="manage-loans"
-      />
+
+     <MenuItem
+  icon={MdOutlineManageHistory}
+  label="Manage Loans"
+  address="manage-loans"
+/>
+
     </>
   )
 }

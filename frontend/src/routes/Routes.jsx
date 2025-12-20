@@ -20,9 +20,10 @@ import MyLoans from '../pages/Dashboard/Customer/MyLoans.jsx'
 import ApplyLoan from '../pages/LoanApplication/ApplyLoan.jsx'
 import PendingLoans from '../pages/Dashboard/Manager/PendingLoans.jsx'
 
-// 🔹 ADD THESE (even dummy page for now)
-import MyInventory from '../pages/Dashboard/Manager/MyInventory.jsx'
 import ManageLoans from '../pages/Dashboard/Manager/ManageLoans.jsx'
+import UpdateLoan from '../pages/Dashboard/Manager/UpdateLoan.jsx'
+import ApprovedLoans from '../pages/Dashboard/Manager/ApprovedLoans.jsx'
+import PaymentSuccess from '../pages/PaymentSuccess.jsx'
 
 export const router = createBrowserRouter([
   {
@@ -43,6 +44,14 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+{
+  path: '/payment-success/:loanId',
+  element: (
+    <PrivateRoute>
+      <PaymentSuccess />
+    </PrivateRoute>
+  ),
+},
 
       {
         path: '/loan/:id',
@@ -76,8 +85,17 @@ export const router = createBrowserRouter([
       { path: 'add-loan', element: <AddLoanForm /> },
       { path: 'update-loan', element: <UpdateLoanForm /> },
       { path: 'pending-loans', element: <PendingLoans /> },
-      { path: 'my-inventory', element: <MyInventory /> },
+      
       { path: 'manage-loans', element: <ManageLoans /> },
+      {
+  path: 'update-loan/:id',
+  element: <UpdateLoan />,
+},
+{
+  path: 'approved-loans',
+  element: <ApprovedLoans />,
+}
+
     ],
   },
 ])
