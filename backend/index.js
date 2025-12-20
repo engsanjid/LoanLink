@@ -24,7 +24,7 @@ app.use(
 )
 app.use(express.json())
 
-// JWT middleware (Firebase ID token)
+// JWT verify
 const verifyJWT = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]
   if (!token) return res.status(401).send({ message: 'Unauthorized' })
@@ -33,7 +33,7 @@ const verifyJWT = async (req, res, next) => {
     const decoded = await admin.auth().verifyIdToken(token)
     req.tokenEmail = decoded.email
     next()
-  } catch (err) {
+  } catch {
     return res.status(401).send({ message: 'Unauthorized' })
   }
 }
@@ -54,22 +54,7 @@ async function run() {
     const loanApplications = db.collection('loanApplications')
     const usersCollection = db.collection('users')
 
-    // Loans
-    app.post('/loans', async (req, res) => {
-      const result = await loansCollection.insertOne(req.body)
-      res.send(result)
-    })
-
-    app.get('/loans', async (req, res) => {
-      const result = await loansCollection.find().limit(6).toArray()
-      res.send(result)
-    })
-
-    app.get('/all-loans', async (req, res) => {
-      const result = await loansCollection.find().toArray()
-      res.send(result)
-    })
-
+    // get single loan
     app.get('/loan/:id', async (req, res) => {
       const loan = await loansCollection.findOne({
         _id: new ObjectId(req.params.id),
@@ -77,7 +62,7 @@ async function run() {
       res.send(loan)
     })
 
-    // Apply Loan
+    // apply loan
     app.post('/loan-applications', verifyJWT, async (req, res) => {
       const application = {
         ...req.body,
@@ -90,7 +75,7 @@ async function run() {
       res.send(result)
     })
 
-    // Borrower → My Loans
+    // borrower → my loans
     app.get('/my-loans', verifyJWT, async (req, res) => {
       const result = await loanApplications
         .find({ userEmail: req.tokenEmail })
@@ -98,7 +83,33 @@ async function run() {
       res.send(result)
     })
 
-    // User role
+// Manager → Pending Loans
+app.get('/pending-loans', verifyJWT, async (req, res) => {
+  const result = await loanApplications
+    .find({ status: 'Pending' })
+    .toArray()
+
+  res.send(result)
+})
+
+
+// Manager → Update Loan Status
+app.patch('/loan-applications/:id', verifyJWT, async (req, res) => {
+  const { status } = req.body
+  const id = req.params.id
+
+  const result = await loanApplications.updateOne(
+    { _id: new ObjectId(id) },
+    {
+      $set: { status },
+    }
+  )
+
+  res.send(result)
+})
+
+
+    // user role
     app.get('/users/role', async (req, res) => {
       const user = await usersCollection.findOne({ email: req.query.email })
       res.send({ role: user?.role || 'borrower' })
