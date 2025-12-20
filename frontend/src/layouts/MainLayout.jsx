@@ -5,7 +5,7 @@ const MainLayout = () => {
   return (
     <div>
       <Navbar />
-    <div className="pt-[68px] min-h-[calc(100vh-68px)]">
+    <div className="pt-[68px] min-h-[calc(100vh-68px)] overflow-x-hidden">
         <Outlet />
       </div>
       <Footer />

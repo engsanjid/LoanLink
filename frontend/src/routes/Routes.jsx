@@ -17,6 +17,7 @@ import AddLoanForm from '../components/Form/AddLoanForm.jsx'
 import UpdateLoanForm from '../components/Form/UpdateLoanForm.jsx'
 import LoanDetails from '../pages/LoanDetails/LoanDetails.jsx'
 import MyLoans from '../pages/Dashboard/Customer/MyLoans.jsx'
+import ApplyLoan from '../pages/LoanApplication/ApplyLoan.jsx'
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,14 @@ export const router = createBrowserRouter([
       { path: '/all-loans', element: <AllLoans /> },
       { path: '/about', element: <About /> },
       { path: '/contact', element: <Contact /> },
+{
+  path: '/apply-loan/:id',
+  element: (
+    <PrivateRoute>
+      <ApplyLoan />
+    </PrivateRoute>
+  ),
+},
 
       {
   path: '/loan/:id',

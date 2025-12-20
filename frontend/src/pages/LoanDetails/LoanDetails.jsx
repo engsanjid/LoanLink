@@ -10,7 +10,7 @@ import useAuth from '../../hooks/useAuth'
 const LoanDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-const { user, role } = useAuth()
+const { user, role } = useAuth();
 console.log('USER:', user)
 console.log('ROLE:', role)
 
@@ -41,7 +41,7 @@ console.log('ROLE:', role)
     createdBy,
   } = loan
 
-  const canApply = role === 'borrower'
+const canApply = user && role === "borrower";
 
   return (
     <Container>
