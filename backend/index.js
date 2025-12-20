@@ -11,6 +11,7 @@ const serviceAccount = JSON.parse(decoded)
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 })
+const { ObjectId } = require('mongodb')
 
 const app = express()
 // middleware
@@ -19,7 +20,7 @@ app.use(
     origin: [
       'http://localhost:5173',
       'http://localhost:5174',
-      'https://b12-m11-session.web.app',
+      
     ],
     credentials: true,
     optionSuccessStatus: 200,
@@ -42,6 +43,8 @@ const verifyJWT = async (req, res, next) => {
     return res.status(401).send({ message: 'Unauthorized Access!', err })
   }
 }
+
+
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(process.env.MONGODB_URI, {
@@ -70,18 +73,49 @@ async function run() {
       res.send(result)
     })
 
-    // get all loans from db
-    app.get('/loans/:id', async (req, res) => {
-      const id = req.params.id
-      const result = await loansCollection.findOne({ _id: new ObjectId(id) })
-      res.send(result)
-    })
+   
+   
 
     app.get('/all-loans', async (req, res) => {
   const result = await loansCollection.find().toArray()
   res.send(result)
 })
 
+app.get('/loan/:id', async (req, res) => {
+  const { id } = req.params
+  const loan = await loansCollection.findOne({
+    _id: new ObjectId(id),
+  })
+  res.send(loan)
+})
+
+
+const loanApplications = db.collection('loanApplications')
+
+app.get('/my-loans', verifyJWT, async (req, res) => {
+  const email = req.tokenEmail
+
+  const result = await loanApplications
+    .find({ userEmail: email })
+    .toArray()
+
+  res.send(result)
+})
+
+
+
+const usersCollection = db.collection('users')
+
+app.get('/users/role', async (req, res) => {
+  const email = req.query.email
+  const user = await usersCollection.findOne({ email })
+
+  if (!user) {
+    return res.send({ role: 'borrower' }) 
+  }
+
+  res.send({ role: user.role })
+})
 
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 })
