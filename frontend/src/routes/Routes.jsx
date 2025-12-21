@@ -8,7 +8,7 @@ import Statistics from '../pages/Dashboard/Common/Statistics'
 import Profile from '../pages/Dashboard/Common/Profile'
 import MainLayout from '../layouts/MainLayout'
 
-import AllLoans from '../pages/AllLoans/AllLoans.jsx'
+import PublicAllLoans from '../pages/AllLoans/PublicAllLoans.jsx'
 import About from '../pages/About/About.jsx'
 import Contact from '../pages/Contact/Contact.jsx'
 import { createBrowserRouter } from 'react-router'
@@ -25,7 +25,9 @@ import UpdateLoan from '../pages/Dashboard/Manager/UpdateLoan.jsx'
 import ApprovedLoans from '../pages/Dashboard/Manager/ApprovedLoans.jsx'
 import PaymentSuccess from '../pages/PaymentSuccess.jsx'
 import ManageUsers from '../pages/Dashboard/Admin/ManageUsers.jsx'
+import LoanApplications from '../pages/Dashboard/loan-applications.jsx'
 
+import AdminAllLoans from '../pages/Dashboard/Admin/AdminAllLoans.jsx'
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -33,7 +35,7 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: '/', element: <Home /> },
-      { path: '/all-loans', element: <AllLoans /> },
+      { path: '/all-loans', element: <PublicAllLoans /> },
       { path: '/about', element: <About /> },
       { path: '/contact', element: <Contact /> },
 
@@ -81,6 +83,14 @@ export const router = createBrowserRouter([
 {
   path: 'manage-users',
   element: <ManageUsers />,
+},
+{
+  path: 'loan-applications',
+  element: <LoanApplications />,
+},
+{
+  path: 'all-loan',
+  element: <AdminAllLoans />,
 },
 
       // Borrower

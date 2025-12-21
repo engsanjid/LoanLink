@@ -3,7 +3,7 @@ import axios from 'axios'
 import LoanCard from './LoanCard'
 import LoadingSpinner from '../../components/Shared/LoadingSpinner'
 
-const AllLoans = () => {
+const PublicAllLoans = () => {
   const { data: loans = [], isLoading } = useQuery({
     queryKey: ['all-loans'],
     queryFn: async () => {
@@ -46,4 +46,4 @@ const AllLoans = () => {
   )
 }
 
-export default AllLoans
+export default PublicAllLoans
