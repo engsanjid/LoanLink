@@ -191,6 +191,9 @@ app.get('/approved-loans', verifyJWT, async (req, res) => {
   res.send(result)
 })
 
+
+
+
 // CREATE STRIPE CHECKOUT SESSION
 app.post('/create-checkout-session', verifyJWT, async (req, res) => {
   try {
@@ -244,6 +247,65 @@ app.post('/payment-success', verifyJWT, async (req, res) => {
   )
 
   res.send({ success: true })
+})
+
+
+const verifyAdmin = async (req, res, next) => {
+  const email = req.tokenEmail
+  const user = await usersCollection.findOne({ email })
+
+  if (user?.role !== 'admin') {
+    return res.status(403).send({ message: 'Forbidden' })
+  }
+  next()
+}
+
+// SAVE USER TO DB (on signup)
+app.post('/users', async (req, res) => {
+  const user = req.body
+
+  const exists = await usersCollection.findOne({ email: user.email })
+  if (exists) {
+    return res.send({ message: 'User already exists' })
+  }
+
+  const result = await usersCollection.insertOne({
+    ...user,
+    role: user.role || 'borrower',
+
+    status: 'active',
+    createdAt: new Date(),
+  })
+
+  res.send(result)
+})
+
+
+app.get('/admin/users', verifyJWT, verifyAdmin, async (req, res) => {
+  const result = await usersCollection.find().toArray()
+  res.send(result)
+})
+
+
+
+
+app.patch('/admin/users/:id', verifyJWT, verifyAdmin, async (req, res) => {
+  const { role, status } = req.body
+  const id = req.params.id
+
+  const updateDoc = {
+    $set: {},
+  }
+
+  if (role) updateDoc.$set.role = role
+  if (status) updateDoc.$set.status = status
+
+  const result = await usersCollection.updateOne(
+    { _id: new ObjectId(id) },
+    updateDoc
+  )
+
+  res.send(result)
 })
 
 
