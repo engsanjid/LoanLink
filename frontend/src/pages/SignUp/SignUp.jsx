@@ -1,3 +1,4 @@
+import axios from "axios"
 import { Link, useLocation, useNavigate } from "react-router"
 import { FcGoogle } from "react-icons/fc"
 import { TbFidgetSpinner } from "react-icons/tb"
@@ -19,23 +20,29 @@ const SignUp = () => {
   } = useForm()
 
   const onSubmit = async data => {
-    const { name, email, password, role, image } = data
-    const imageFile = image?.[0]
+  const { name, email, password, role, image } = data
+  const imageFile = image?.[0]
 
-    try {
-      const imageURL = imageFile ? await imageUpload(imageFile) : ""
-      const userCredential = await createUser(email, password)
-      await updateUserProfile(name, imageURL)
+  try {
+    const imageURL = imageFile ? await imageUpload(imageFile) : ""
+   await createUser(email, password)
+    await updateUserProfile(name, imageURL)
 
-      console.log("UID:", userCredential.user.uid)
-      console.log("Role:", role)
+    // ✅ JUST ADDED THIS
+    await axios.post(`${import.meta.env.VITE_API_URL}/users`, {
+      name,
+      email,
+      role,
+      image: imageURL,
+    })
 
-      toast.success("Account created successfully 🎉")
-      navigate(from, { replace: true })
-    } catch (err) {
-      toast.error(err.message)
-    }
+    toast.success("Account created successfully 🎉")
+    navigate(from, { replace: true })
+  } catch (err) {
+    toast.error(err.message)
   }
+}
+
 
   const handleGoogleSignIn = async () => {
     try {

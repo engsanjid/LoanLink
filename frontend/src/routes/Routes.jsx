@@ -24,6 +24,7 @@ import ManageLoans from '../pages/Dashboard/Manager/ManageLoans.jsx'
 import UpdateLoan from '../pages/Dashboard/Manager/UpdateLoan.jsx'
 import ApprovedLoans from '../pages/Dashboard/Manager/ApprovedLoans.jsx'
 import PaymentSuccess from '../pages/PaymentSuccess.jsx'
+import ManageUsers from '../pages/Dashboard/Admin/ManageUsers.jsx'
 
 export const router = createBrowserRouter([
   {
@@ -77,6 +78,10 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Statistics /> },
       { path: 'profile', element: <Profile /> },
+{
+  path: 'manage-users',
+  element: <ManageUsers />,
+},
 
       // Borrower
       { path: 'my-loans', element: <MyLoans /> },

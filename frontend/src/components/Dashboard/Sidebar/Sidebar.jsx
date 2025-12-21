@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import useAuth from '../../../hooks/useAuth'
+import useRole from '../../../hooks/useRole'
 
 // Icons
 import { GrLogout } from 'react-icons/gr'
@@ -8,97 +9,81 @@ import { FcSettings } from 'react-icons/fc'
 import { AiOutlineBars } from 'react-icons/ai'
 import { BsGraphUp } from 'react-icons/bs'
 
-// User Menu
+// Menus
 import MenuItem from './Menu/MenuItem'
 import AdminMenu from './Menu/AdminMenu'
-import CustomerMenu from './Menu/CustomerMenu'
 import ManagerMenu from './Menu/ManagerMenu'
+import BorrowerMenu from './Menu/BorrowerMenu'
 
 const Sidebar = () => {
   const { logOut } = useAuth()
+  const { role, isLoading } = useRole()
   const [isActive, setActive] = useState(false)
 
-  // Sidebar Responsive Handler
+  if (isLoading) return null
+
   const handleToggle = () => {
     setActive(!isActive)
   }
 
   return (
     <>
-    
-      <div className='bg-gray-100 text-gray-800 flex justify-between md:hidden'>
-        <div>
-          <div className='block cursor-pointer p-4 font-bold'>
-             <Link
-          to="/"
-          className="text-2xl font-bold tracking-wide text-yellow-300 hover:text-yellow-200 transition"
-        >
+      {/* Mobile Navbar */}
+      <div className="bg-gray-100 text-gray-800 flex justify-between md:hidden">
+        <Link to="/" className="p-4 font-bold text-2xl text-yellow-300">
           LoanLink
         </Link>
-          </div>
-        </div>
 
         <button
           onClick={handleToggle}
-          className='mobile-menu-button p-4 focus:outline-none focus:bg-gray-200'
+          className="p-4 focus:outline-none focus:bg-gray-200"
         >
-          <AiOutlineBars className='h-5 w-5' />
+          <AiOutlineBars className="h-5 w-5" />
         </button>
       </div>
 
       {/* Sidebar */}
       <div
-        className={`z-10 md:fixed flex flex-col justify-between overflow-x-hidden bg-gray-100 w-64 space-y-6 px-2 py-4 absolute inset-y-0 left-0 transform ${
+        className={`z-10 md:fixed flex flex-col justify-between bg-gray-100 w-64 px-2 py-4 absolute inset-y-0 left-0 transform ${
           isActive && '-translate-x-full'
-        }  md:translate-x-0  transition duration-200 ease-in-out`}
+        } md:translate-x-0 transition duration-200`}
       >
-        <div className='flex flex-col h-full'>
-          {/* Top Content */}
-          <div>
-            {/* Logo */}
-            <div className='w-full hidden md:flex px-4 py-2 shadow-lg rounded-lg justify-center items-center bg-lime-100 mx-auto'>
-               <Link
-          to="/"
-          className="text-2xl font-bold tracking-wide text-yellow-300 hover:text-yellow-200 transition"
-        >
-          LoanLink
-        </Link>
-            </div>
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="hidden md:flex justify-center bg-lime-100 py-2 rounded">
+            <Link to="/" className="text-2xl font-bold text-yellow-300">
+              LoanLink
+            </Link>
           </div>
 
-          {/* Middle Content */}
-          <div className='flex flex-col justify-between flex-1 mt-6'>
-            {/*  Menu Items */}
-            <nav>
-              {/* Common Menu */}
-              <MenuItem
-                icon={BsGraphUp}
-                label='Statistics'
-                address='/dashboard'
-              />
-              {/* Role-Based Menu */}
-              <CustomerMenu />
-              <ManagerMenu />
-              <AdminMenu />
-            </nav>
-          </div>
+          {/* Menu */}
+          <nav className="mt-6 flex-1">
+            <MenuItem
+              icon={BsGraphUp}
+              label="Statistics"
+              address="/dashboard"
+            />
 
-          {/* Bottom Content */}
+            {/* ROLE BASED MENU */}
+            {role === 'borrower' && <BorrowerMenu />}
+            {role === 'manager' && <ManagerMenu />}
+            {role === 'admin' && <AdminMenu />}
+          </nav>
+
+          {/* Bottom */}
           <div>
             <hr />
-
             <MenuItem
               icon={FcSettings}
-              label='Profile'
-              address='/dashboard/profile'
+              label="Profile"
+              address="/dashboard/profile"
             />
             <button
               onClick={logOut}
-              className='flex cursor-pointer w-full items-center px-4 py-2 mt-5 text-gray-600 hover:bg-gray-300   hover:text-gray-700 transition-colors duration-300 transform'
+              className="flex w-full items-center px-4 py-2 mt-4 text-gray-600 hover:bg-gray-300"
             >
-              <GrLogout className='w-5 h-5' />
-
-              <span className='mx-4 font-medium'>Logout</span>
+              <GrLogout className="w-5 h-5" />
+              <span className="mx-4">Logout</span>
             </button>
           </div>
         </div>
