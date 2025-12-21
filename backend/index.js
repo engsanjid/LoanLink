@@ -250,6 +250,8 @@ app.post('/payment-success', verifyJWT, async (req, res) => {
 })
 
 
+
+
 const verifyAdmin = async (req, res, next) => {
   const email = req.tokenEmail
   const user = await usersCollection.findOne({ email })
@@ -259,6 +261,30 @@ const verifyAdmin = async (req, res, next) => {
   }
   next()
 }
+
+// ADMIN → GET ALL LOAN APPLICATIONS (with Filter)
+app.get('/admin/loan-applications', verifyJWT, verifyAdmin, async (req, res) => {
+  try {
+    const { status } = req.query; 
+    let query = {};
+
+    
+    if (status && status !== "") {
+      query.status = status;
+    }
+
+    const result = await loanApplications
+      .find(query)
+      .sort({ createdAt: -1 }) 
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.error("Error fetching loan applications:", error);
+    res.status(500).send({ message: 'Failed to fetch loan applications' });
+  }
+});
+
 
 // SAVE USER TO DB (on signup)
 app.post('/users', async (req, res) => {
