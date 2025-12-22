@@ -1,7 +1,7 @@
 import { motion } from "framer-motion"
 import { Link } from "react-router"
 import Loans from '../../components/Home/Loans'
-import bannerimg from "../../assets/images/unnamed.jpg"
+
 import CustomerReviews from "./CustomerReviews"
 import HowItWorks from "./HowItWorks"
 import Stats from "./Stats"
@@ -63,7 +63,7 @@ const Home = () => {
             className="hidden lg:block"
           >
             <img
-              src={bannerimg}
+              src="/unnamed.jpg"
               alt="Loan Banner"
               className={`rounded-2xl shadow-2xl transition-all duration-500 ${
                 theme === 'dark' ? 'opacity-80 border border-gray-700' : ''
