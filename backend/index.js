@@ -23,7 +23,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',
-      'https://super-babka-131395.netlify.app' 
+      'https://jade-frangipane-e8ac0f.netlify.app' 
     ],
     credentials: true,
   })
