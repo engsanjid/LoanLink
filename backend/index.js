@@ -95,9 +95,16 @@ app.patch('/my-loans/cancel/:id', verifyJWT, async (req, res) => {
 })
 
 // PUBLIC → HOME / FEATURED LOANS
+
 app.get('/loans', async (req, res) => {
-  const result = await loansCollection.find({}).limit(6).toArray()
-  res.send(result)
+  try {
+    
+    const query = { showOnHome: true }; 
+    const result = await loansCollection.find(query).limit(6).toArray();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: 'Error fetching home loans' });
+  }
 })
 
     // MANAGER → MANAGE LOANS
@@ -286,6 +293,55 @@ app.get('/admin/loan-applications', verifyJWT, verifyAdmin, async (req, res) => 
 });
 
 
+// --- ADMIN LOAN MANAGEMENT ---
+
+// 1. GET ALL LOANS (For Admin Table)
+app.get('/admin/all-loans', verifyJWT, verifyAdmin, async (req, res) => {
+  try {
+    const result = await loansCollection.find().toArray()
+    res.send(result)
+  } catch (error) {
+    res.status(500).send({ message: 'Failed to fetch all loans' })
+  }
+})
+
+// 2. TOGGLE SHOW ON HOME
+app.patch('/admin/loans/home/:id', verifyJWT, verifyAdmin, async (req, res) => {
+  try {
+    const id = req.params.id
+    const { showOnHome } = req.body
+    
+    const result = await loansCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { showOnHome: showOnHome } }
+    )
+    
+    if (result.modifiedCount > 0) {
+      res.send({ success: true, message: 'Home status updated' })
+    } else {
+      res.status(404).send({ message: 'Loan not found' })
+    }
+  } catch (error) {
+    res.status(500).send({ message: 'Update failed' })
+  }
+})
+
+// 3. DELETE LOAN (Admin Version)
+app.delete('/admin/loans/:id', verifyJWT, verifyAdmin, async (req, res) => {
+  try {
+    const id = req.params.id
+    const result = await loansCollection.deleteOne({ _id: new ObjectId(id) })
+    
+    if (result.deletedCount > 0) {
+      res.send({ success: true, message: 'Loan deleted successfully' })
+    } else {
+      res.status(404).send({ message: 'Loan not found' })
+    }
+  } catch (error) {
+    res.status(500).send({ message: 'Delete failed' })
+  }
+})
+
 // SAVE USER TO DB (on signup)
 app.post('/users', async (req, res) => {
   const user = req.body
@@ -308,9 +364,37 @@ app.post('/users', async (req, res) => {
 
 
 app.get('/admin/users', verifyJWT, verifyAdmin, async (req, res) => {
-  const result = await usersCollection.find().toArray()
-  res.send(result)
-})
+  try {
+    const search = req.query.search || '';
+    const roleFilter = req.query.role || '';
+    const page = parseInt(req.query.page) || 1;
+    const size = parseInt(req.query.size) || 5;
+
+ 
+    const query = {
+      $or: [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ]
+    };
+
+    if (roleFilter) {
+      query.role = roleFilter;
+    }
+
+
+    const totalUsers = await usersCollection.countDocuments(query);
+
+    const result = await usersCollection.find(query)
+      .skip((page - 1) * size)
+      .limit(size)
+      .toArray();
+
+    res.send({ users: result, totalUsers });
+  } catch (error) {
+    res.status(500).send({ message: 'Failed to fetch users' });
+  }
+});
 
 
 
