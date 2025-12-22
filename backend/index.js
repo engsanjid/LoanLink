@@ -26,8 +26,8 @@ if (!admin.apps.length) {
 app.use(
   cors({
     origin: [
-      'http://localhost:5173',
-      'https://jade-frangipane-e8ac0f.netlify.app' // আপনার লাইভ লিঙ্ক
+    
+      'https://steady-kringle-50c576.netlify.app' 
     ],
     credentials: true,
   })
