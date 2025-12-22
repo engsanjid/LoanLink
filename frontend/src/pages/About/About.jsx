@@ -1,11 +1,18 @@
 import { motion } from 'framer-motion'
+import { useTheme } from '../../context/ThemeContext'
 
 const About = () => {
+  const { theme } = useTheme()
+
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className={`min-h-screen transition-colors duration-500 ${theme === 'light' ? 'bg-gray-50' : 'bg-gray-900'}`}>
 
       {/* HERO */}
-      <section className="bg-gradient-to-br from-pink-500 via-purple-500 to-fuchsia-600 py-24 text-white">
+      <section className={`py-24 text-white transition-all duration-500 ${
+        theme === 'light' 
+        ? 'bg-gradient-to-br from-pink-500 via-purple-500 to-fuchsia-600' 
+        : 'bg-gray-800 border-b border-gray-700'
+      }`}>
         <div className="max-w-[1200px] mx-auto px-6 text-center">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -34,10 +41,10 @@ const About = () => {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            <h2 className={`text-3xl font-bold mb-4 ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>
               Our Mission
             </h2>
-            <p className="text-gray-600 leading-relaxed">
+            <p className={`leading-relaxed ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
               LoanLink aims to bridge the gap between borrowers and lenders by
               offering a transparent, fast, and secure loan management platform.
               We help microfinance institutions manage applications, approvals,
@@ -52,10 +59,10 @@ const About = () => {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            <h2 className={`text-3xl font-bold mb-4 ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>
               Why LoanLink?
             </h2>
-            <ul className="space-y-3 text-gray-600">
+            <ul className={`space-y-3 ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
               <li>✔ Role-based dashboards (Admin, Manager, Borrower)</li>
               <li>✔ Secure Firebase Authentication & JWT protection</li>
               <li>✔ Real-time loan application tracking</li>

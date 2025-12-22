@@ -16,7 +16,7 @@ import { createBrowserRouter } from 'react-router'
 import AddLoanForm from '../components/Form/AddLoanForm.jsx'
 import UpdateLoanForm from '../components/Form/UpdateLoanForm.jsx'
 import LoanDetails from '../pages/LoanDetails/LoanDetails.jsx'
-import MyLoans from '../pages/Dashboard/Customer/MyLoans.jsx'
+import MyLoans from '../pages/Dashboard/Borrower/MyLoans.jsx'
 import ApplyLoan from '../pages/LoanApplication/ApplyLoan.jsx'
 import PendingLoans from '../pages/Dashboard/Manager/PendingLoans.jsx'
 

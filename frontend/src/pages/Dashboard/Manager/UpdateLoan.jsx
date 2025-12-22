@@ -2,11 +2,13 @@ import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import useAuth from '../../../hooks/useAuth'
+import { useTheme } from '../../../context/ThemeContext'
 
 const UpdateLoan = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { theme } = useTheme()
 
   const { data: loan, isLoading } = useQuery({
     queryKey: ['loan', id],
@@ -48,63 +50,52 @@ const UpdateLoan = () => {
     navigate('/dashboard/manage-loans')
   }
 
-  if (isLoading) return <p className="p-6">Loading...</p>
+  const inputClass = `w-full border p-2 rounded outline-none transition-all ${
+    theme === 'light' 
+    ? 'bg-white border-gray-300 text-gray-800 focus:ring-2 focus:ring-indigo-100' 
+    : 'bg-gray-700 border-gray-600 text-white focus:ring-2 focus:ring-indigo-900'
+  }`
+
+  if (isLoading) return <p className={`p-6 ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>Loading...</p>
 
   return (
-    <div className="max-w-xl mx-auto bg-white shadow rounded p-6">
-      <h2 className="text-2xl font-bold mb-4">Update Loan</h2>
+    <div className={`max-w-xl mx-auto rounded-xl shadow-2xl p-8 border transition-colors duration-300 ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-gray-800 border-gray-700'}`}>
+      <h2 className={`text-2xl font-bold mb-6 ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>Update Loan</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          name="title"
-          defaultValue={loan?.title}
-          placeholder="Loan Title"
-          className="w-full border p-2 rounded"
-          required
-        />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className={`text-xs font-bold uppercase mb-1 block ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Loan Title</label>
+          <input name="title" defaultValue={loan?.title} className={inputClass} required />
+        </div>
 
-        <input
-          name="category"
-          defaultValue={loan?.category}
-          placeholder="Category"
-          className="w-full border p-2 rounded"
-          required
-        />
+        <div>
+          <label className={`text-xs font-bold uppercase mb-1 block ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Category</label>
+          <input name="category" defaultValue={loan?.category} className={inputClass} required />
+        </div>
 
-        <input
-          name="interestRate"
-          type="number"
-          defaultValue={loan?.interestRate}
-          placeholder="Interest Rate"
-          className="w-full border p-2 rounded"
-          required
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={`text-xs font-bold uppercase mb-1 block ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Interest (%)</label>
+            <input name="interestRate" type="number" step="0.01" defaultValue={loan?.interestRate} className={inputClass} required />
+          </div>
+          <div>
+            <label className={`text-xs font-bold uppercase mb-1 block ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Max Amount</label>
+            <input name="maxAmount" type="number" defaultValue={loan?.maxAmount} className={inputClass} required />
+          </div>
+        </div>
 
-        <input
-          name="maxAmount"
-          type="number"
-          defaultValue={loan?.maxAmount}
-          placeholder="Max Loan Amount"
-          className="w-full border p-2 rounded"
-          required
-        />
+        <div>
+          <label className={`text-xs font-bold uppercase mb-1 block ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>EMI Plan</label>
+          <input name="emiPlan" defaultValue={loan?.emiPlan} className={inputClass} />
+        </div>
 
-        <input
-          name="emiPlan"
-          defaultValue={loan?.emiPlan}
-          placeholder="EMI Plan"
-          className="w-full border p-2 rounded"
-        />
+        <div>
+          <label className={`text-xs font-bold uppercase mb-1 block ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Description</label>
+          <textarea name="description" rows="4" defaultValue={loan?.description} className={inputClass} />
+        </div>
 
-        <textarea
-          name="description"
-          defaultValue={loan?.description}
-          placeholder="Description"
-          className="w-full border p-2 rounded"
-        />
-
-        <button className="w-full bg-indigo-600 text-white py-2 rounded">
-          Update Loan
+        <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
+          Update Loan Program
         </button>
       </form>
     </div>

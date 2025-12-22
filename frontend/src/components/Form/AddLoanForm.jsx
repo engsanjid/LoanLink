@@ -5,10 +5,12 @@ import axios from 'axios'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { TbFidgetSpinner } from 'react-icons/tb'
+import { FaCloudUploadAlt, FaPercentage, FaWallet, FaRegCalendarAlt, FaFileAlt } from 'react-icons/fa'
+import { useTheme } from '../../context/ThemeContext'
 
 const AddLoanForm = () => {
   const { user } = useAuth()
-
+  const { theme } = useTheme()
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
 
   const { mutateAsync, isPending } = useMutation({
@@ -43,137 +45,141 @@ const AddLoanForm = () => {
           photo: user?.photoURL,
         },
       }
-
       await mutateAsync(loanData)
     } catch (err) {
-      toast.error('Something went wrong')
+      toast.error('Something went wrong ')
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center items-center px-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-5xl bg-white rounded-xl shadow-xl p-8 grid grid-cols-1 lg:grid-cols-2 gap-8"
-      >
-
-        {/* LEFT */}
-        <div className="space-y-5">
-
-          {/* Loan Title */}
-          <div>
-            <label className="text-sm font-medium">Loan Title</label>
-            <input
-              className="w-full border-b-2 border-gray-300 focus:border-pink-500 outline-none py-2"
-              {...register('title', { required: 'Title is required' })}
-              placeholder="Personal Loan"
-            />
-            {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="text-sm font-medium">Category</label>
-            <select
-              className="w-full border-b-2 border-gray-300 focus:border-pink-500 py-2"
-              {...register('category', { required: true })}
-            >
-              <option value="">Select category</option>
-              <option value="Personal">Personal</option>
-              <option value="Business">Business</option>
-              <option value="Education">Education</option>
-              <option value="Home">Medical</option>
-              <option value="Home">Vehicle</option>
-              <option value="Home">Home</option>
-            </select>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="text-sm font-medium">Description</label>
-            <textarea
-              className="w-full border border-gray-300 rounded-md p-3 focus:border-pink-500"
-              rows="4"
-              {...register('description', { required: true })}
-            />
-          </div>
-
-          {/* Required Documents */}
-          <div>
-            <label className="text-sm font-medium">Required Documents</label>
-            <input
-              className="w-full border-b-2 border-gray-300 py-2"
-              {...register('documents', { required: true })}
-              placeholder="NID, Bank Statement"
-            />
-          </div>
-
+    <div className={`min-h-screen flex justify-center items-center px-4 py-12 transition-colors duration-300 ${theme === 'light' ? 'bg-gray-50/50' : 'bg-gray-900'}`}>
+      <div className={`w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden border transition-colors duration-300 ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-gray-800 border-gray-700'}`}>
+        
+        <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-fuchsia-600 p-8 text-white">
+          <h2 className="text-3xl font-black tracking-tight">Add New Loan Program</h2>
+          <p className="opacity-80 text-sm mt-1">Provide necessary information to create a new financial plan.</p>
         </div>
 
-        {/* RIGHT */}
-        <div className="space-y-5">
-
-          {/* Interest Rate */}
-          <div>
-            <label className="text-sm font-medium">Interest Rate (%)</label>
-            <input
-              type="number"
-              className="w-full border-b-2 border-gray-300 py-2"
-              {...register('interestRate', { required: true })}
-            />
-          </div>
-
-          {/* Max Loan Limit */}
-          <div>
-            <label className="text-sm font-medium">Max Loan Amount</label>
-            <input
-              type="number"
-              className="w-full border-b-2 border-gray-300 py-2"
-              {...register('maxAmount', { required: true })}
-            />
-          </div>
-
-          {/* EMI Plan */}
-          <div>
-            <label className="text-sm font-medium">EMI Plan</label>
-            <input
-              className="w-full border-b-2 border-gray-300 py-2"
-              {...register('emiPlan', { required: true })}
-              placeholder="6 / 12 / 24 months"
-            />
-          </div>
-
-          {/* Image Upload */}
-          <div className="border-2 border-dashed rounded-lg p-4 text-center">
-            <label className="cursor-pointer">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 lg:p-12 grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="space-y-6">
+            <div>
+              <label className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>
+                <FaFileAlt className="text-purple-500" /> Loan Title
+              </label>
               <input
-                type="file"
-             
-                accept="image/*"
-                {...register('image', { required: true })}
+                className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none transition-all ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-gray-700 border-gray-600 text-white'}`}
+                {...register('title', { required: 'Title is required' })}
+                placeholder="e.g. Professional Business Loan"
               />
-              <span className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-md">
-                Upload Image
-              </span>
-            </label>
+              {errors.title && <p className="text-xs text-red-500 mt-1 font-medium">{errors.title.message}</p>}
+            </div>
+
+            <div>
+              <label className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>Category</label>
+              <select
+                className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none transition-all ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-gray-700 border-gray-600 text-white'}`}
+                {...register('category', { required: true })}
+              >
+                <option value="">Select category</option>
+                <option value="Personal">Personal</option>
+                <option value="Business">Business</option>
+                <option value="Education">Education</option>
+                <option value="Medical">Medical</option>
+                <option value="Vehicle">Vehicle</option>
+                <option value="Home">Home</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>Description</label>
+              <textarea
+                className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none transition-all resize-none ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-gray-700 border-gray-600 text-white'}`}
+                rows="5"
+                placeholder="Briefly explain the loan benefits..."
+                {...register('description', { required: true })}
+              />
+            </div>
+
+            <div>
+              <label className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>Required Documents</label>
+              <input
+                className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none transition-all ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-gray-700 border-gray-600 text-white'}`}
+                {...register('documents', { required: true })}
+                placeholder="NID, Bank Statement, Trade License"
+              />
+            </div>
           </div>
 
-          {/* Show on Home */}
-          <div className="flex items-center gap-3">
-            <input type="checkbox" {...register('showOnHome')} />
-            <label className="text-sm">Show this loan on Home page</label>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <FaPercentage className="text-pink-500" /> Interest (%)
+                </label>
+                <input
+                  type="number" step="0.01"
+                  className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none transition-all ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-gray-700 border-gray-600 text-white'}`}
+                  {...register('interestRate', { required: true })}
+                />
+              </div>
+              <div>
+                <label className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <FaWallet className="text-emerald-500" /> Max Amount
+                </label>
+                <input
+                  type="number"
+                  className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none transition-all ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-gray-700 border-gray-600 text-white'}`}
+                  {...register('maxAmount', { required: true })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-2 ${theme === 'light' ? 'text-gray-400' : 'text-gray-500'}`}>
+                <FaRegCalendarAlt className="text-blue-500" /> EMI Plan (Months)
+              </label>
+              <input
+                className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none transition-all ${theme === 'light' ? 'bg-gray-50 border-gray-200 text-gray-800' : 'bg-gray-700 border-gray-600 text-white'}`}
+                {...register('emiPlan', { required: true })}
+                placeholder="e.g. 6, 12, 24, 36"
+              />
+            </div>
+
+            <div className={`group relative border-2 border-dashed rounded-2xl p-6 transition-all hover:border-purple-400 ${theme === 'light' ? 'border-gray-300 bg-gray-50/50' : 'border-gray-600 bg-gray-700/30'}`}>
+              <label className="cursor-pointer flex flex-col items-center justify-center gap-2">
+                <FaCloudUploadAlt size={40} className="text-gray-400 group-hover:text-purple-500 transition-colors" />
+                <span className={`text-sm font-bold group-hover:text-purple-600 ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>Click to upload loan cover</span>
+                <input
+                  type="file"
+                  className="hidden" 
+                  accept="image/*"
+                  {...register('image', { required: true })}
+                />
+              </label>
+            </div>
+
+            <div className={`flex items-center p-4 rounded-2xl border ${theme === 'light' ? 'bg-purple-50 border-purple-100' : 'bg-purple-900/20 border-purple-800'}`}>
+              <input 
+                type="checkbox" 
+                id="showHome"
+                className="w-5 h-5 accent-purple-600 rounded"
+                {...register('showOnHome')} 
+              />
+              <label htmlFor="showHome" className={`ml-3 text-sm font-bold cursor-pointer ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}>
+                Promote this loan on the home page
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-fuchsia-600 text-white font-black uppercase tracking-widest shadow-xl hover:opacity-90 hover:scale-[1.01] transition-all active:scale-95 disabled:grayscale"
+            >
+              {isPending ? <TbFidgetSpinner className="animate-spin mx-auto text-2xl" /> : 'Create Loan Program'}
+            </button>
           </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full py-3 rounded-md bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold"
-          >
-            {isPending ? <TbFidgetSpinner className="animate-spin mx-auto" /> : 'Save Loan'}
-          </button>
-
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }

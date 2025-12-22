@@ -1,7 +1,13 @@
+import { useTheme } from '../../context/ThemeContext'
 import { motion } from 'framer-motion'
 const Stats = () => {
+  const { theme } = useTheme()
   return (
-    <section className="py-24 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
+    <section className={`py-24 transition-all ${
+      theme === 'light' 
+      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' 
+      : 'bg-black text-white border-y border-gray-800'
+    }`}>
   <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
 
     {[
