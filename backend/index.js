@@ -9,18 +9,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const app = express()
 const port = process.env.PORT || 3000
 
-// Firebase Admin
-const decoded = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString('utf-8')
-const serviceAccount = JSON.parse(decoded)
+// Firebase Admin initialization
+if (!admin.apps.length) {
+  const decoded = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString('utf-8')
+  const serviceAccount = JSON.parse(decoded)
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  })
+}
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-})
-
-// Middleware
+// Middleware - Updated CORS for Vercel
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: [
+      'http://localhost:5173',
+      'https://super-babka-131395.netlify.app' 
+    ],
     credentials: true,
   })
 )
@@ -30,7 +34,6 @@ app.use(express.json())
 const verifyJWT = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]
   if (!token) return res.status(401).send({ message: 'Unauthorized' })
-
   try {
     const decoded = await admin.auth().verifyIdToken(token)
     req.tokenEmail = decoded.email
@@ -40,7 +43,7 @@ const verifyJWT = async (req, res, next) => {
   }
 }
 
-// MongoDB
+// MongoDB Client
 const client = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -51,131 +54,53 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 
 async function run() {
   try {
+    // await client.connect(); 
     const db = client.db('loansDB')
     const loansCollection = db.collection('loans')
     const loanApplications = db.collection('loanApplications')
     const usersCollection = db.collection('users')
 
-
-// PUBLIC → ALL LOANS (For All Loans Page)
-
-app.get('/all-loans', async (req, res) => {
-  try {
-    const result = await loansCollection.find({}).toArray()
-    res.send(result)
-  } catch (error) {
-    res.status(500).send({ message: 'Failed to load loans' })
-  }
-})
-
-
-// BORROWER → MY LOANS
-app.get('/my-loans', verifyJWT, async (req, res) => {
-  const email = req.tokenEmail
-
-  const result = await loanApplications
-    .find({ userEmail: email })
-    .sort({ createdAt: -1 })
-    .toArray()
-
-  res.send(result)
-})
-
-
-// BORROWER → CANCEL LOAN (only Pending)
-app.patch('/my-loans/cancel/:id', verifyJWT, async (req, res) => {
-  const id = req.params.id
-
-  const result = await loanApplications.updateOne(
-    { _id: new ObjectId(id), status: 'Pending' },
-    { $set: { status: 'Cancelled' } }
-  )
-
-  res.send(result)
-})
-
-// PUBLIC → HOME / FEATURED LOANS
-
-app.get('/loans', async (req, res) => {
-  try {
+    // --- API ROUTES START ---
     
-    const query = { showOnHome: true }; 
-    const result = await loansCollection.find(query).limit(6).toArray();
-    res.send(result);
-  } catch (error) {
-    res.status(500).send({ message: 'Error fetching home loans' });
-  }
-})
-
-    // MANAGER → MANAGE LOANS
-    
-    app.get('/manager/manage-loans', verifyJWT, async (req, res) => {
+    // Admin Verify Middleware
+    const verifyAdmin = async (req, res, next) => {
       const email = req.tokenEmail
-      const search = req.query.search || ''
+      const user = await usersCollection.findOne({ email })
+      if (user?.role !== 'admin') return res.status(403).send({ message: 'Forbidden' })
+      next()
+    }
 
-      const query = {
-        'createdBy.email': email,
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { category: { $regex: search, $options: 'i' } },
-        ],
-      }
-
-      const result = await loansCollection.find(query).toArray()
+    // Public Routes
+    app.get('/all-loans', async (req, res) => {
+      const result = await loansCollection.find({}).toArray()
       res.send(result)
     })
 
-    /**
-     * DELETE loan
-     */
-    app.delete('/loans/:id', verifyJWT, async (req, res) => {
-      const id = req.params.id
-
-      const result = await loansCollection.deleteOne({
-        _id: new ObjectId(id),
-      })
-
+    app.get('/loans', async (req, res) => {
+      const result = await loansCollection.find({ showOnHome: true }).limit(6).toArray()
       res.send(result)
     })
-
-    /**
-     * UPDATE loan
-     */
-    app.patch('/loans/:id', verifyJWT, async (req, res) => {
-      const id = req.params.id
-      const updateData = req.body
-
-      const result = await loansCollection.updateOne(
-        { _id: new ObjectId(id) },
-        { $set: updateData }
-      )
-
-      res.send(result)
-    })
-
 
     app.get('/loan/:id', async (req, res) => {
-      const loan = await loansCollection.findOne({
-        _id: new ObjectId(req.params.id),
-      })
+      const loan = await loansCollection.findOne({ _id: new ObjectId(req.params.id) })
       res.send(loan)
     })
 
+    // Borrower Routes
+    app.get('/my-loans', verifyJWT, async (req, res) => {
+      const result = await loanApplications.find({ userEmail: req.tokenEmail }).sort({ createdAt: -1 }).toArray()
+      res.send(result)
+    })
+
     app.post('/loan-applications', verifyJWT, async (req, res) => {
-      const application = {
-        ...req.body,
-        status: 'Pending',
-        feeStatus: 'Unpaid',
-        createdAt: new Date(),
-      }
+      const application = { ...req.body, status: 'Pending', feeStatus: 'Unpaid', createdAt: new Date() }
       const result = await loanApplications.insertOne(application)
       res.send(result)
     })
 
+    // Manager/Admin Routes
     app.get('/pending-loans', verifyJWT, async (req, res) => {
-      const result = await loanApplications
-        .find({ status: 'Pending' })
-        .toArray()
+      const result = await loanApplications.find({ status: 'Pending' }).toArray()
       res.send(result)
     })
 
@@ -188,253 +113,66 @@ app.get('/loans', async (req, res) => {
       res.send(result)
     })
 
-// Manager → Approved Loan Applications
-app.get('/approved-loans', verifyJWT, async (req, res) => {
-  const result = await loanApplications
-    .find({ status: 'Approved' })
-    .sort({ approvedAt: -1 })
-    .toArray()
-
-  res.send(result)
-})
-
-
-
-
-// CREATE STRIPE CHECKOUT SESSION
-app.post('/create-checkout-session', verifyJWT, async (req, res) => {
-  try {
-    const { loanId } = req.body
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: { name: 'Loan Application Fee' },
-            unit_amount: 1000,
-          },
+    // Stripe Routes
+    app.post('/create-checkout-session', verifyJWT, async (req, res) => {
+      const { loanId } = req.body
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        line_items: [{
+          price_data: { currency: 'usd', product_data: { name: 'Loan Application Fee' }, unit_amount: 1000 },
           quantity: 1,
-        },
-      ],
-      success_url: `${process.env.CLIENT_URL}/payment-success/${loanId}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/dashboard/my-loans`,
+        }],
+        success_url: `${process.env.CLIENT_URL}/payment-success/${loanId}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_URL}/dashboard/my-loans`,
+      })
+      res.send({ url: session.url })
     })
 
-    res.send({ url: session.url })
-  } catch (err) {
-    console.error('Stripe error:', err.message)
-    res.status(500).send({ message: 'Payment session failed' })
-  }
-})
-
-
-
-// PAYMENT SUCCESS
-app.post('/payment-success', verifyJWT, async (req, res) => {
-  const { loanId, sessionId } = req.body
-
-  const session = await stripe.checkout.sessions.retrieve(sessionId)
-
-  await loanApplications.updateOne(
-    { _id: new ObjectId(loanId) },
-    {
-      $set: {
-        feeStatus: 'Paid',
-        paymentInfo: {
-          transactionId: session.payment_intent,
-          email: session.customer_details.email,
-          amount: session.amount_total / 100,
-          paidAt: new Date(),
-        },
-      },
-    }
-  )
-
-  res.send({ success: true })
-})
-
-
-
-
-const verifyAdmin = async (req, res, next) => {
-  const email = req.tokenEmail
-  const user = await usersCollection.findOne({ email })
-
-  if (user?.role !== 'admin') {
-    return res.status(403).send({ message: 'Forbidden' })
-  }
-  next()
-}
-
-// ADMIN → GET ALL LOAN APPLICATIONS (with Filter)
-app.get('/admin/loan-applications', verifyJWT, verifyAdmin, async (req, res) => {
-  try {
-    const { status } = req.query; 
-    let query = {};
-
-    
-    if (status && status !== "") {
-      query.status = status;
-    }
-
-    const result = await loanApplications
-      .find(query)
-      .sort({ createdAt: -1 }) 
-      .toArray();
-
-    res.send(result);
-  } catch (error) {
-    console.error("Error fetching loan applications:", error);
-    res.status(500).send({ message: 'Failed to fetch loan applications' });
-  }
-});
-
-
-// --- ADMIN LOAN MANAGEMENT ---
-
-// 1. GET ALL LOANS (For Admin Table)
-app.get('/admin/all-loans', verifyJWT, verifyAdmin, async (req, res) => {
-  try {
-    const result = await loansCollection.find().toArray()
-    res.send(result)
-  } catch (error) {
-    res.status(500).send({ message: 'Failed to fetch all loans' })
-  }
-})
-
-// 2. TOGGLE SHOW ON HOME
-app.patch('/admin/loans/home/:id', verifyJWT, verifyAdmin, async (req, res) => {
-  try {
-    const id = req.params.id
-    const { showOnHome } = req.body
-    
-    const result = await loansCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { showOnHome: showOnHome } }
-    )
-    
-    if (result.modifiedCount > 0) {
-      res.send({ success: true, message: 'Home status updated' })
-    } else {
-      res.status(404).send({ message: 'Loan not found' })
-    }
-  } catch (error) {
-    res.status(500).send({ message: 'Update failed' })
-  }
-})
-
-// 3. DELETE LOAN (Admin Version)
-app.delete('/admin/loans/:id', verifyJWT, verifyAdmin, async (req, res) => {
-  try {
-    const id = req.params.id
-    const result = await loansCollection.deleteOne({ _id: new ObjectId(id) })
-    
-    if (result.deletedCount > 0) {
-      res.send({ success: true, message: 'Loan deleted successfully' })
-    } else {
-      res.status(404).send({ message: 'Loan not found' })
-    }
-  } catch (error) {
-    res.status(500).send({ message: 'Delete failed' })
-  }
-})
-
-// SAVE USER TO DB (on signup)
-app.post('/users', async (req, res) => {
-  const user = req.body
-
-  const exists = await usersCollection.findOne({ email: user.email })
-  if (exists) {
-    return res.send({ message: 'User already exists' })
-  }
-
-  const result = await usersCollection.insertOne({
-    ...user,
-    role: user.role || 'borrower',
-
-    status: 'active',
-    createdAt: new Date(),
-  })
-
-  res.send(result)
-})
-
-
-app.get('/admin/users', verifyJWT, verifyAdmin, async (req, res) => {
-  try {
-    const search = req.query.search || '';
-    const roleFilter = req.query.role || '';
-    const page = parseInt(req.query.page) || 1;
-    const size = parseInt(req.query.size) || 5;
-
- 
-    const query = {
-      $or: [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ]
-    };
-
-    if (roleFilter) {
-      query.role = roleFilter;
-    }
-
-
-    const totalUsers = await usersCollection.countDocuments(query);
-
-    const result = await usersCollection.find(query)
-      .skip((page - 1) * size)
-      .limit(size)
-      .toArray();
-
-    res.send({ users: result, totalUsers });
-  } catch (error) {
-    res.status(500).send({ message: 'Failed to fetch users' });
-  }
-});
-
-
-
-
-app.patch('/admin/users/:id', verifyJWT, verifyAdmin, async (req, res) => {
-  const { role, status } = req.body
-  const id = req.params.id
-
-  const updateDoc = {
-    $set: {},
-  }
-
-  if (role) updateDoc.$set.role = role
-  if (status) updateDoc.$set.status = status
-
-  const result = await usersCollection.updateOne(
-    { _id: new ObjectId(id) },
-    updateDoc
-  )
-
-  res.send(result)
-})
-
-
+    // Users and Roles
+    app.post('/users', async (req, res) => {
+      const user = req.body
+      const exists = await usersCollection.findOne({ email: user.email })
+      if (exists) return res.send({ message: 'User already exists' })
+      const result = await usersCollection.insertOne({ ...user, role: user.role || 'borrower', status: 'active', createdAt: new Date() })
+      res.send(result)
+    })
 
     app.get('/users/role', async (req, res) => {
       const user = await usersCollection.findOne({ email: req.query.email })
       res.send({ role: user?.role || 'borrower' })
     })
 
-    console.log('MongoDB Connected')
-  } finally {}
+    // Admin Users Management
+    app.get('/admin/users', verifyJWT, verifyAdmin, async (req, res) => {
+        const search = req.query.search || '';
+        const roleFilter = req.query.role || '';
+        const page = parseInt(req.query.page) || 1;
+        const size = parseInt(req.query.size) || 5;
+        const query = { $or: [{ name: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }] };
+        if (roleFilter) query.role = roleFilter;
+        const totalUsers = await usersCollection.countDocuments(query);
+        const users = await usersCollection.find(query).skip((page - 1) * size).limit(size).toArray();
+        res.send({ users, totalUsers });
+    });
+
+    // --- API ROUTES END ---
+
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 run().catch(console.dir)
 
 app.get('/', (req, res) => {
-  res.send('Server Running')
+  res.send('LoanLink Server is running...')
 })
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`)
-})
+// Essential for Vercel
+module.exports = app;
+
+// Keep listen for local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => console.log(`Server on port ${port}`))
+}
