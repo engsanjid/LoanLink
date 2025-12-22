@@ -19,24 +19,37 @@ const AdminAllLoans = () => {
     }
   }, [user])
 
-  useEffect(() => {
-    if (!token) return
-    axios.get(`${import.meta.env.VITE_API_URL}/admin/all-loans`, {
-      headers: { authorization: `Bearer ${token}` },
-    }).then(res => {
-      setLoans(res.data)
-      setLoading(false)
-    })
-  }, [token])
 
-  const toggleHome = (id, value) => {
-    axios.patch(`${import.meta.env.VITE_API_URL}/admin/loans/home/${id}`, { showOnHome: value }, { headers: { authorization: `Bearer ${token}` } })
-      .then((res) => {
-        if (res.data.success) {
-          setLoans(prev => prev.map(l => (l._id === id ? { ...l, showOnHome: value } : l)))
-        }
-      })
+useEffect(() => {
+  if (!token) return
+  
+  axios.get(`${import.meta.env.VITE_API_URL}/admin/all-loans`, {
+    headers: { authorization: `Bearer ${token}` },
+  }).then(res => {
+    setLoans(res.data)
+    setLoading(false)
+  })
+}, [token])
+
+  const toggleHome = async (id, value) => {
+  try {
+    await axios.patch(
+      `${import.meta.env.VITE_API_URL}/admin/loans/home/${id}`,
+      { showOnHome: value },
+      { headers: { authorization: `Bearer ${token}` } }
+    )
+
+    setLoans(prev =>
+      prev.map(l =>
+        l._id === id ? { ...l, showOnHome: value } : l
+      )
+    )
+  } catch (err) {
+    console.error(err)
+    alert("Toggle failed")
   }
+}
+
 
   const deleteLoan = id => {
     if (!confirm('Are you sure?')) return
