@@ -1,68 +1,36 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import useAuth from '../../../hooks/useAuth'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../../../context/ThemeContext'
+import useAxiosSecure from '../../../hooks/useAxiosSecure'
 
 const MyLoans = () => {
   const { user, loading } = useAuth()
-  const [token, setToken] = useState(null)
+  const axiosSecure = useAxiosSecure()
   const [selectedPayment, setSelectedPayment] = useState(null)
   const navigate = useNavigate()
   const { theme } = useTheme()
 
-  useEffect(() => {
-    if (user) {
-      user.getIdToken().then(t => setToken(t))
-    }
-  }, [user])
-
   const { data: loans = [], isLoading, refetch } = useQuery({
     queryKey: ['my-loans', user?.email],
-    enabled: !!token,
+    enabled: !loading && !!user?.email,
     queryFn: async () => {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/my-loans`,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const res = await axiosSecure.get('/my-loans')
       return res.data
     },
   })
 
   const handleCancel = async id => {
     if (!window.confirm('Cancel this loan?')) return
-
-    await axios.patch(
-      `${import.meta.env.VITE_API_URL}/my-loans/cancel/${id}`,
-      {},
-      {
-        headers: { authorization: `Bearer ${token}` },
-      }
-    )
+    await axiosSecure.patch(`/my-loans/cancel/${id}`)
     refetch()
   }
 
   const handlePay = async loanId => {
-    const firebaseToken = await user.getIdToken(true)
-
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_URL}/create-checkout-session`,
-      { loanId },
-      {
-        headers: {
-          authorization: `Bearer ${firebaseToken}`,
-        },
-      }
-    )
-
+    const res = await axiosSecure.post('/create-checkout-session', { loanId })
     window.location.href = res.data.url
   }
-
   if (loading || isLoading) return <div className={`min-h-screen p-6 ${theme === 'light' ? 'bg-white text-gray-800' : 'bg-gray-900 text-white'}`}>Loading...</div>
 
   return (

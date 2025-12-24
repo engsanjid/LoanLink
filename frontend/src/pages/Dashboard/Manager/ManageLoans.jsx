@@ -1,28 +1,21 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import useAuth from '../../../hooks/useAuth'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom' // check if it's 'react-router' or 'react-router-dom'
 import { FaSearch, FaEdit, FaTrashAlt, FaLayerGroup, FaPercentage } from 'react-icons/fa'
 import { useTheme } from '../../../context/ThemeContext'
+import useAxiosSecure from '../../../hooks/useAxiosSecure'
 
 const ManageLoans = () => {
-  const { user } = useAuth()
   const { theme } = useTheme()
+  const { user } = useAuth()
   const [search, setSearch] = useState('')
+  const axiosSecure = useAxiosSecure()
 
   const { data: loans = [], refetch, isLoading } = useQuery({
     queryKey: ['manager-loans', search],
     queryFn: async () => {
-      const token = await user.getIdToken()
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/manager/manage-loans?search=${search}`,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const res = await axiosSecure.get(`/manager/manage-loans?search=${search}`)
       return res.data
     },
     enabled: !!user,
@@ -32,17 +25,12 @@ const ManageLoans = () => {
     const confirm = window.confirm('Are you sure you want to delete this loan?')
     if (!confirm) return
 
-    const token = await user.getIdToken()
-    await axios.delete(
-      `${import.meta.env.VITE_API_URL}/loans/${id}`,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    )
-
-    refetch()
+    try {
+      await axiosSecure.delete(`/loans/${id}`)
+      refetch()
+    } catch (error) {
+      console.error("Error deleting loan:", error)
+    }
   }
 
   if (isLoading) {

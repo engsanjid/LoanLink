@@ -1,61 +1,47 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import useAuth from '../../../hooks/useAuth'
+import { useQuery } from '@tanstack/react-query'
+
 import { useNavigate } from 'react-router'
 import { FaEdit, FaTrashAlt } from 'react-icons/fa' 
 import { useTheme } from '../../../context/ThemeContext'
+import useAxiosSecure from '../../../hooks/useAxiosSecure'
+import LoadingSpinner from '../../../components/Shared/LoadingSpinner'
+import toast from 'react-hot-toast'
 
 const AdminAllLoans = () => {
-  const { user } = useAuth()
   const { theme } = useTheme()
-  const [token, setToken] = useState(null)
-  const [loans, setLoans] = useState([])
-  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const axiosSecure = useAxiosSecure()
 
-  useEffect(() => {
-    if (user) {
-      user.getIdToken().then(t => setToken(t))
+  const { data: loans = [], isLoading, refetch } = useQuery({
+    queryKey: ['admin-all-loans'],
+    queryFn: async () => {
+      const res = await axiosSecure.get('/admin/all-loans')
+      return res.data
     }
-  }, [user])
-
-
-useEffect(() => {
-  if (!token) return
-  
-  axios.get(`${import.meta.env.VITE_API_URL}/admin/all-loans`, {
-    headers: { authorization: `Bearer ${token}` },
-  }).then(res => {
-    setLoans(res.data)
-    setLoading(false)
   })
-}, [token])
 
   const toggleHome = async (id, value) => {
-  try {
-    await axios.patch(
-      `${import.meta.env.VITE_API_URL}/admin/loans/home/${id}`,
-      { showOnHome: value },
-      { headers: { authorization: `Bearer ${token}` } }
-    )
-
-    setLoans(prev =>
-      prev.map(l =>
-        l._id === id ? { ...l, showOnHome: value } : l
-      )
-    )
-  } catch (err) {
-    console.error(err)
-    alert("Toggle failed")
+    try {
+      await axiosSecure.patch(`/admin/loans/home/${id}`, { showOnHome: value })
+      toast.success('Status updated')
+      refetch()
+    } catch (err) {
+      toast.error("Toggle failed")
+    }
   }
-}
 
-
-  const deleteLoan = id => {
+  const deleteLoan = async id => {
     if (!confirm('Are you sure?')) return
-    axios.delete(`${import.meta.env.VITE_API_URL}/admin/loans/${id}`, { headers: { authorization: `Bearer ${token}` } })
-      .then(() => setLoans(prev => prev.filter(l => l._id !== id)))
+    try {
+      await axiosSecure.delete(`/admin/loans/${id}`)
+      toast.success('Loan deleted')
+      refetch()
+    } catch (err) {
+      toast.error('Failed to delete')
+    }
   }
+
+  if (isLoading) return <LoadingSpinner />
 
   return (
     <div className={`min-h-screen transition-colors duration-500 px-4 py-8 ${theme === 'light' ? 'bg-white' : 'bg-gray-900'}`}>
@@ -83,9 +69,7 @@ useEffect(() => {
               </tr>
             </thead>
             <tbody className={`divide-y ${theme === 'light' ? 'divide-gray-50' : 'divide-gray-700'}`}>
-              {loading ? (
-                 <tr><td colSpan="6" className="text-center py-10 text-gray-400">Loading...</td></tr>
-              ) : loans.map(loan => (
+              {loans.map(loan => (
                 <tr key={loan._id} className={`transition-colors ${theme === 'light' ? 'hover:bg-gray-50' : 'hover:bg-gray-700/30'}`}>
                   <td className="p-4">
                     <div className="flex items-center gap-4">

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
@@ -9,9 +8,9 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth"
-
 import { auth } from "../firebase/firebase.config"
 import { AuthContext } from "./AuthContext"
+import axios from "axios" // Public axios for basic check or you can use axiosSecure
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -47,20 +46,24 @@ const AuthProvider = ({ children }) => {
     })
   }
 
+  // Fetch User Role from DB
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async currentUser => {
       setUser(currentUser)
 
       if (currentUser?.email) {
         try {
+          // এখানে সরাসরি axios ব্যবহার করা হয়েছে কারণ প্রথমবার লোড হওয়ার সময় টোকেন নাও থাকতে পারে
           const res = await axios.get(
             `${import.meta.env.VITE_API_URL}/users/role?email=${currentUser.email}`
           )
           setRole(res.data.role)
         } catch (err) {
           console.error("Role fetch error:", err)
-          setRole("borrower") // fallback
+          setRole("borrower") 
         }
+      } else {
+        setRole(null)
       }
 
       setLoading(false)

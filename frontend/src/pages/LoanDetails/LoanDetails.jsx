@@ -1,23 +1,24 @@
 import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import Container from '../../components/Shared/Container'
 import Button from '../../components/Shared/Button/Button'
 import LoadingSpinner from '../../components/Shared/LoadingSpinner'
 import useAuth from '../../hooks/useAuth'
 import { FaPercentage, FaWallet, FaRegCalendarAlt, FaUserTie, FaCheckCircle } from 'react-icons/fa'
 import { useTheme } from '../../context/ThemeContext'
+import useAxiosSecure from '../../hooks/useAxiosSecure'
 
 const LoanDetails = () => {
   const { id } = useParams()
   const { theme } = useTheme()
   const navigate = useNavigate()
   const { user, role } = useAuth()
+  const axiosSecure = useAxiosSecure()
 
   const { data: loan, isLoading, error } = useQuery({
     queryKey: ['loan-details', id],
     queryFn: async () => {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/loan/${id}`)
+      const res = await axiosSecure.get(`/loan/${id}`)
       return res.data
     },
     enabled: !!id,

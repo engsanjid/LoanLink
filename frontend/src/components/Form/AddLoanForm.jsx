@@ -1,26 +1,28 @@
 import { useForm } from 'react-hook-form'
 import { imageUpload } from '../../utils'
 import useAuth from '../../hooks/useAuth'
-import axios from 'axios'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { TbFidgetSpinner } from 'react-icons/tb'
 import { FaCloudUploadAlt, FaPercentage, FaWallet, FaRegCalendarAlt, FaFileAlt } from 'react-icons/fa'
 import { useTheme } from '../../context/ThemeContext'
+import useAxiosSecure from '../../hooks/useAxiosSecure'
 
 const AddLoanForm = () => {
   const { user } = useAuth()
+  const axiosSecure = useAxiosSecure() 
   const { theme } = useTheme()
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async payload =>
-      await axios.post(`${import.meta.env.VITE_API_URL}/loans`, payload),
+
+      await axiosSecure.post(`/loans`, payload), 
     onSuccess: () => {
       toast.success('Loan added successfully 🎉')
       reset()
     },
-    onError: err => toast.error(err.message),
+    onError: err => toast.error(err.response?.data?.message || err.message),
   })
 
   const onSubmit = async data => {

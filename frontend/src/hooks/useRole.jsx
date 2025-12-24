@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import useAuth from './useAuth'
+import useAxiosSecure from './useAxiosSecure' // ইমপোর্ট করা হয়েছে
 
 const useRole = () => {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+  const axiosSecure = useAxiosSecure() // হুকটি কল করা হয়েছে
 
   const { data: role = 'borrower', isLoading } = useQuery({
     queryKey: ['role', user?.email],
-    enabled: !!user?.email,
+    enabled: !loading && !!user?.email, // লোডিং শেষ হলে এবং ইমেইল থাকলে রান হবে
     queryFn: async () => {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/users/role?email=${user.email}`
-      )
+      // baseURL দেওয়া আছে তাই শুধু পাথ লিখলেই হবে
+      const res = await axiosSecure.get(`/users/role?email=${user.email}`)
       return res.data.role
     },
   })

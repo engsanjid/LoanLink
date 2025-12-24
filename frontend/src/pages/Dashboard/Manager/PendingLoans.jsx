@@ -1,50 +1,26 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
-import useAuth from '../../../hooks/useAuth'
-import { useEffect, useState } from 'react'
+
+
 import { FaUser, FaClock, FaCheck, FaTimes, FaEye } from 'react-icons/fa'
 import { useTheme } from '../../../context/ThemeContext'
+import useAxiosSecure from '../../../hooks/useAxiosSecure'
 
 const PendingLoans = () => {
-  const { user } = useAuth()
   const { theme } = useTheme()
-  const [token, setToken] = useState(null)
-
-  useEffect(() => {
-    if (user) {
-      user.getIdToken().then(t => setToken(t))
-    }
-  }, [user])
+  const axiosSecure = useAxiosSecure()
 
   const { data: loans = [], refetch, isLoading } = useQuery({
     queryKey: ['pending-loans'],
-    enabled: !!token,
     queryFn: async () => {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/pending-loans`,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const res = await axiosSecure.get('/pending-loans')
       return res.data
     },
   })
 
   const handleStatus = async (id, status) => {
-    await axios.patch(
-      `${import.meta.env.VITE_API_URL}/loan-applications/${id}`,
-      { status },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    await axiosSecure.patch(`/loan-applications/${id}`, { status })
     refetch()
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">

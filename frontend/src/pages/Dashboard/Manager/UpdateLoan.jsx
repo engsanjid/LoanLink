@@ -1,21 +1,19 @@
 import { useParams, useNavigate } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
-import useAuth from '../../../hooks/useAuth'
+
 import { useTheme } from '../../../context/ThemeContext'
+import useAxiosSecure from '../../../hooks/useAxiosSecure'
 
 const UpdateLoan = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
   const { theme } = useTheme()
+  const axiosSecure = useAxiosSecure()
 
   const { data: loan, isLoading } = useQuery({
     queryKey: ['loan', id],
     queryFn: async () => {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/loan/${id}`
-      )
+      const res = await axiosSecure.get(`/loan/${id}`)
       return res.data
     },
     enabled: !!id,
@@ -34,20 +32,13 @@ const UpdateLoan = () => {
       description: form.description.value,
     }
 
-    const token = await user.getIdToken()
-
-    await axios.patch(
-      `${import.meta.env.VITE_API_URL}/loans/${id}`,
-      updatedLoan,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    )
-
-    alert('Loan Updated Successfully')
-    navigate('/dashboard/manage-loans')
+    try {
+      await axiosSecure.patch(`/loans/${id}`, updatedLoan)
+      alert('Loan Updated Successfully')
+      navigate('/dashboard/manage-loans')
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const inputClass = `w-full border p-2 rounded outline-none transition-all ${

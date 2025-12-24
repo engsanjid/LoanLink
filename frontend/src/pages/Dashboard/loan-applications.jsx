@@ -1,46 +1,36 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
+import { useQuery } from '@tanstack/react-query'
 import useAuth from '../../hooks/useAuth'
 import { FaEye, FaFilter, FaInfoCircle } from 'react-icons/fa'
 import { useTheme } from '../../context/ThemeContext'
+import useAxiosSecure from '../../hooks/useAxiosSecure'
+import { useState } from 'react'
+import LoadingSpinner from '../../components/Shared/LoadingSpinner'
 
 const LoanApplications = () => {
   const { user } = useAuth()
   const { theme } = useTheme()
-  const [token, setToken] = useState(null)
-  const [applications, setApplications] = useState([])
+  const axiosSecure = useAxiosSecure()
   const [status, setStatus] = useState('')
   const [selected, setSelected] = useState(null)
 
-  useEffect(() => {
-    if (user) {
-      user.getIdToken().then(t => setToken(t))
+  const { data: applications = [], isLoading } = useQuery({
+    queryKey: ['loan-applications', status],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/admin/loan-applications?status=${status}`)
+      return res.data
     }
-  }, [user])
+  })
 
-  useEffect(() => {
-    if (!token) return
-
-    axios
-      .get(
-        `${import.meta.env.VITE_API_URL}/admin/loan-applications?status=${status}`,
-        {
-          headers: { authorization: `Bearer ${token}` },
-        }
-      )
-      .then(res => setApplications(res.data))
-  }, [token, status])
+  if (isLoading) return <LoadingSpinner />
 
   return (
     <div className={`max-w-7xl mx-auto px-4 py-8 min-h-screen transition-colors duration-500 ${theme === 'light' ? 'bg-transparent' : 'bg-gray-900'}`}>
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className={`text-3xl font-extrabold ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}>Loan Applications</h2>
           <p className={`${theme === 'light' ? 'text-gray-500' : 'text-gray-400'} text-sm`}>Review and manage all incoming loan requests</p>
         </div>
 
-        {/* Filter Dropdown */}
         <div className={`flex items-center gap-3 px-4 py-2 rounded-xl shadow-sm border transition-colors ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-gray-800 border-gray-700'}`}>
           <FaFilter className="text-indigo-500 text-sm" />
           <select
@@ -56,7 +46,6 @@ const LoanApplications = () => {
         </div>
       </div>
 
-      {/* Table Container */}
       <div className={`shadow-xl rounded-2xl overflow-hidden border transition-colors ${theme === 'light' ? 'bg-white border-gray-100' : 'bg-gray-800 border-gray-700'}`}>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -118,12 +107,9 @@ const LoanApplications = () => {
         </div>
       </div>
 
-      {/* Modal Design */}
       {selected && (
         <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
           <div className={`rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all scale-100 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}>
-            
-            {/* Modal Header */}
             <div className="px-8 py-6 bg-indigo-600 text-white flex justify-between items-center">
               <div>
                 <h3 className="text-xl font-bold">Application Details</h3>
@@ -132,7 +118,6 @@ const LoanApplications = () => {
               <FaInfoCircle className="text-2xl text-indigo-200" />
             </div>
 
-            {/* Modal Body */}
             <div className="p-8 overflow-y-auto space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <section>
@@ -180,7 +165,6 @@ const LoanApplications = () => {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className={`p-6 border-t transition-colors ${theme === 'light' ? 'bg-gray-50 border-gray-100' : 'bg-gray-900/80 border-gray-700'}`}>
               <button
                 onClick={() => setSelected(null)}

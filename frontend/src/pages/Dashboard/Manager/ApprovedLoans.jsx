@@ -1,31 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
-import useAuth from '../../../hooks/useAuth'
+
 import { useNavigate } from 'react-router'
 import { FaEye, FaCalendarAlt, FaMoneyBillWave, FaUser } from 'react-icons/fa'
 import { useTheme } from '../../../context/ThemeContext'
+import useAxiosSecure from '../../../hooks/useAxiosSecure'
 
 const ApprovedLoans = () => {
-  const { user } = useAuth()
   const { theme } = useTheme()
   const navigate = useNavigate()
+  const axiosSecure = useAxiosSecure()
 
   const { data: loans = [], isLoading } = useQuery({
     queryKey: ['approved-loans'],
     queryFn: async () => {
-      const token = await user.getIdToken()
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/approved-loans`,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const res = await axiosSecure.get('/approved-loans')
       return res.data
     },
   })
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
