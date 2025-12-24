@@ -3,8 +3,6 @@ const express = require('express')
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const admin = require('firebase-admin')
-const Stripe = require('stripe')
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -47,7 +45,6 @@ const verifyJWT = async (req, res, next) => {
   }
 }
 
-// MongoDB Client
 const client = new MongoClient(process.env.MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -64,7 +61,6 @@ async function run() {
     const usersCollection = db.collection('users')
 
     // --- ACCESS CONTROL MIDDLEWARES ---
-    
     const verifyManager = async (req, res, next) => {
       const email = req.tokenEmail
       const user = await usersCollection.findOne({ email })
@@ -81,65 +77,15 @@ async function run() {
       next()
     }
 
-    // --- MANAGER & APPROVAL ROUTES ---
-
-    // সকল পেন্ডিং অ্যাপ্লিকেশন দেখুন
-    app.get('/pending-loans', verifyJWT, verifyManager, async (req, res) => {
-      const result = await loanApplications.find({ status: 'Pending' }).toArray();
+    // --- USER RELATED ROUTES ---
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await usersCollection.findOne(query);
+      if (existingUser) return res.send({ message: 'user already exists' });
+      const result = await usersCollection.insertOne(user);
       res.send(result);
     });
-
-    // লোন অ্যাপ্লিকেশন স্ট্যাটাস পরিবর্তন (Approve/Reject)
-    app.patch('/loan-applications/:id', verifyJWT, verifyManager, async (req, res) => {
-      const id = req.params.id;
-      const { status } = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: { 
-          status: status,
-          actionDate: new Date()
-        }
-      };
-      const result = await loanApplications.updateOne(filter, updateDoc);
-      res.send(result);
-    });
-
-    // --- ADMIN LOAN MANAGEMENT ROUTES ---
-
-    // অ্যাডমিন প্যানেলের জন্য সকল লোন (এটি AdminAllLoans.jsx এর জন্য)
-    app.get('/admin/all-loans', verifyJWT, verifyAdmin, async (req, res) => {
-      const result = await loansCollection.find({}).toArray();
-      res.send(result);
-    });
-
-    // হোমপেজে লোন দেখানো বা লুকানো (Featured Toggle)
-    app.patch('/admin/loans/home/:id', verifyJWT, verifyAdmin, async (req, res) => {
-      const id = req.params.id;
-      const { showOnHome } = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = { $set: { showOnHome: showOnHome } };
-      const result = await loansCollection.updateOne(filter, updateDoc);
-      res.send({ success: true, result });
-    });
-
-    // লোন ডিলিট করা
-    app.delete('/admin/loans/:id', verifyJWT, verifyAdmin, async (req, res) => {
-      const id = req.params.id;
-      const result = await loansCollection.deleteOne({ _id: new ObjectId(id) });
-      res.send(result);
-    });
-
-    // --- PUBLIC & GENERAL ROUTES ---
-
-    app.get('/loans', async (req, res) => {
-      const result = await loansCollection.find({ showOnHome: true }).limit(6).toArray()
-      res.send(result)
-    })
-
-    app.get('/my-loans', verifyJWT, async (req, res) => {
-      const result = await loanApplications.find({ userEmail: req.tokenEmail }).sort({ createdAt: -1 }).toArray()
-      res.send(result)
-    })
 
     app.get('/users/role', async (req, res) => {
       const email = req.query.email;
@@ -148,8 +94,130 @@ async function run() {
       res.send({ role: user?.role || 'borrower' })
     })
 
-  } catch (err) {
-    console.error(err)
+    // --- ADMIN: MANAGE USERS ROUTE (404 সমাধান করবে) ---
+    app.get('/admin/users', verifyJWT, verifyAdmin, async (req, res) => {
+      const search = req.query.search || '';
+      const role = req.query.role || '';
+      
+      let query = {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } }
+        ]
+      };
+      
+      if (role) {
+        query.role = role;
+      }
+
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // --- ADMIN: MANAGE ALL LOANS ROUTE ---
+    app.get('/admin/all-loans', verifyJWT, verifyAdmin, async (req, res) => {
+      const result = await loansCollection.find().toArray();
+      res.send(result);
+    });
+
+    // --- MANAGER ROUTES ---
+    app.get('/manager/manage-loans', verifyJWT, verifyManager, async (req, res) => {
+      const search = req.query.search || '';
+      const query = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { category: { $regex: search, $options: 'i' } }
+        ]
+      };
+      const result = await loansCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get('/pending-loans', verifyJWT, verifyManager, async (req, res) => {
+      const result = await loanApplications.find({ status: 'Pending' }).toArray();
+      res.send(result);
+    });
+
+    // --- LOAN APPLICATIONS (BORROWER) ---
+    app.post('/loan-applications', verifyJWT, async (req, res) => {
+      const application = req.body;
+      application.status = 'Pending';
+      application.createdAt = new Date();
+      const result = await loanApplications.insertOne(application);
+      res.send(result);
+    });
+
+    app.get('/my-loans', verifyJWT, async (req, res) => {
+      const result = await loanApplications.find({ userEmail: req.tokenEmail }).sort({ createdAt: -1 }).toArray()
+      res.send(result)
+    })
+
+    // --- LOAN CRUD (ADMIN) ---
+    app.post('/loans', verifyJWT, verifyAdmin, async (req, res) => {
+      const loanData = req.body;
+      const result = await loansCollection.insertOne(loanData);
+      res.send(result);
+    });
+
+    app.patch('/loans/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = { $set: req.body };
+      const result = await loansCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete('/loans/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const result = await loansCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+app.patch('/admin/users/:id', verifyJWT, verifyAdmin, async (req, res) => {
+  const id = req.params.id
+  const result = await usersCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: req.body }
+  )
+  res.send(result)
+})
+
+
+    // --- PUBLIC ROUTES ---
+    app.get('/loans', async (req, res) => {
+      const result = await loansCollection.find({ showOnHome: true }).limit(6).toArray()
+      res.send(result)
+    })
+
+    app.get('/loan/:id', async (req, res) => {
+      const id = req.params.id;
+      const result = await loansCollection.findOne({ _id: new ObjectId(id) });
+      res.send(result);
+    })
+
+    // --- PUBLIC: ALL LOANS (used by PublicAllLoans.jsx) ---
+    app.get('/all-loans', async (req, res) => {
+      const result = await loansCollection.find().toArray();
+      res.send(result);
+    })
+
+    // --- MANAGER: APPROVED LOAN APPLICATIONS ---
+    app.get('/approved-loans', verifyJWT, verifyManager, async (req, res) => {
+      const result = await loanApplications.find({ status: 'Approved' }).toArray();
+      res.send(result);
+    })
+
+    // --- ADMIN: LIST LOAN APPLICATIONS (with optional status filter) ---
+    app.get('/admin/loan-applications', verifyJWT, verifyAdmin, async (req, res) => {
+      const status = req.query.status;
+      const filter = {}
+      if (status) filter.status = status;
+      const result = await loanApplications.find(filter).toArray();
+      res.send(result);
+    })
+
+  } finally {
+    // Keep connection open
   }
 }
 
@@ -159,8 +227,4 @@ app.get('/', (req, res) => {
   res.send('LoanLink Server is running...')
 })
 
-module.exports = app;
-
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => console.log(`Server running on port ${port}`))
-}
+app.listen(port, () => console.log(`Server running on port ${port}`))
